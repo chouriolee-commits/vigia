@@ -19,6 +19,21 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
 
     ids_detectados_recientemente = {d.livestock_id for d in detecciones if d.livestock_id is not None}
 
+    # No repetir el mismo animal por cada detección (un escaneo genera muchas
+    # detecciones del mismo animal en distintos frames) — una fila por animal,
+    # con su detección más reciente. Las anomalías puntuales de por medio ya se
+    # ven en Alertas (006-alert-system), no hace falta repetir la fila aquí para
+    # mostrarlas. Detecciones sin identificar (livestock_id None) sí se listan
+    # todas: cada una podría ser un animal desconocido distinto.
+    vistos: set[int] = set()
+    detecciones_unicas = []
+    for d in detecciones:  # ya viene ordenado por detected_at desc
+        if d.livestock_id is None:
+            detecciones_unicas.append(d)
+        elif d.livestock_id not in vistos:
+            vistos.add(d.livestock_id)
+            detecciones_unicas.append(d)
+
     animales_reales = [
         AnimalReal(
             livestock_id=d.livestock_id,
@@ -29,7 +44,7 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
             confidence=float(d.confidence),
             es_esperado_aqui=(d.livestock_id in {a.id for a in esperados}) if d.livestock_id else False,
         )
-        for d in detecciones
+        for d in detecciones_unicas
     ]
 
     animales_esperados = [
