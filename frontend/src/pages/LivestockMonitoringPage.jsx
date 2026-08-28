@@ -73,6 +73,11 @@ export default function LivestockMonitoringPage() {
               {data.animales_esperados.length} {data.animales_esperados.length === 1 ? 'animal' : 'animales'}
             </span>
           )}
+          {data && (
+            <span className="livestock-page__scanned" title="Animales contados en el último escaneo con dron de este potrero">
+              {data.cantidad_escaneada} {data.cantidad_escaneada === 1 ? 'escaneado' : 'escaneados'}
+            </span>
+          )}
         </h1>
         <div className="livestock-page__header-actions">
           {potreros.length > 1 && (

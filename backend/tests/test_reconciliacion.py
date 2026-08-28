@@ -21,6 +21,32 @@ def test_reconciliacion_lista_animal_esperado_no_detectado(client, seed_media):
     assert body["animales_esperados"][0]["livestock_tag"] == "VG-001"
     assert body["animales_esperados"][0]["detectado_recientemente"] is False
     assert body["animales_reales"] == []
+    # Sin detecciones todavía en la misión de este potrero -- 0, no null ni error.
+    assert body["cantidad_escaneada"] == 0
+
+
+def test_reconciliacion_cantidad_escaneada_cuenta_detecciones_de_la_ultima_mision(client, db, seed_media):
+    """cantidad_escaneada = total de detecciones (identificadas o no) de la última
+    misión de ESE potrero -- persiste como "lo que se escaneó ahí la última vez"
+    aunque el usuario se vaya a ver otro potrero en el panel en vivo."""
+    from datetime import datetime, timezone
+
+    from app.repositories import detection_repository
+
+    for _ in range(3):
+        detection_repository.create(
+            db,
+            media_id=seed_media["media_id"],
+            livestock_id=seed_media["livestock_id"],
+            potrero_id=seed_media["potrero_id"],
+            bbox_x=0.1, bbox_y=0.1, bbox_width=0.1, bbox_height=0.1,
+            confidence=0.9, behavior="pastoreo", model_version="test",
+            detected_at=datetime.now(timezone.utc),
+        )
+    db.commit()
+
+    body = client.get(f"/api/potreros/{seed_media['potrero_id']}/reconciliacion").json()
+    assert body["cantidad_escaneada"] == 3
 
 
 def test_reconciliacion_no_repite_el_mismo_animal(client, db, seed_media):

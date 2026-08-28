@@ -111,6 +111,20 @@
   box-shadow: 0 0 0 3px var(--danger-soft);
 }
 
+.live-feed-panel__potrero-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  background: rgba(10, 12, 18, 0.75);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
 .live-feed-panel__timestamp {
   position: absolute;
   top: 0.75rem;

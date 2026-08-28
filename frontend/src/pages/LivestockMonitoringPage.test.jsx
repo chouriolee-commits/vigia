@@ -20,6 +20,7 @@ function renderPage() {
 const RECONCILIATION_MOCK = {
   potrero: { id: 1, name: 'Potrero Norte' },
   ventana_horas: 2,
+  cantidad_escaneada: 12,
   animales_reales: [
     {
       livestock_id: 24,
@@ -76,6 +77,12 @@ describe('LivestockMonitoringPage', () => {
     vi.mocked(useLivestockReconciliation).mockReturnValue({ data: RECONCILIATION_MOCK, loading: false, error: null })
     renderPage()
     expect(screen.getByText('2 animales')).toBeInTheDocument()
+  })
+
+  it('muestra la cantidad escaneada en el último escaneo del potrero', () => {
+    vi.mocked(useLivestockReconciliation).mockReturnValue({ data: RECONCILIATION_MOCK, loading: false, error: null })
+    renderPage()
+    expect(screen.getByText('12 escaneados')).toBeInTheDocument()
   })
 
   it('un animal esperado con detectado_recientemente:false se muestra como Faltante', () => {

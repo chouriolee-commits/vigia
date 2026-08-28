@@ -33,5 +33,14 @@ export function getReconciliationMock(potreroId = POTRERO.id) {
     detectado_recientemente: detectedIds.has(l.livestock_id),
   }))
 
-  return { potrero, ventana_horas: 2, animales_reales, animales_esperados }
+  // En el mock no hay "misión" real que contar -- se aproxima con el total de
+  // detecciones sembradas para este potrero, mismo criterio que el backend real
+  // (COUNT de detections de la última misión).
+  return {
+    potrero,
+    ventana_horas: 2,
+    cantidad_escaneada: detectionsHere.length,
+    animales_reales,
+    animales_esperados,
+  }
 }

@@ -4,6 +4,7 @@ import CapturedImagesModal from './CapturedImagesModal'
 import { CameraIcon } from './icons'
 import { formatTime } from '../utils/format'
 import { startSimulation } from '../services/simulationService'
+import { usePotreros } from '../hooks/usePotreros'
 import './LiveFeedPanel.css'
 
 const MAX_CAPTURES = 12
@@ -20,7 +21,35 @@ const VIDEO_OPTIONS = [
   { key: 'pastizal-suelo', label: 'Pastizal (suelo)', file: 'pastizal-suelo.mp4', potreroId: 2 },
   { key: 'pastizal-aereo', label: 'Pastizal (aéreo)', file: 'pastizal-aereo.mp4', potreroId: 3 },
 ]
+// Un potrero por id, en el mismo orden que aparecen sus videos arriba -- la
+// selección real siempre pasa primero por acá (potrero) y recién después por
+// VIDEO_OPTIONS filtrado a ese potrero (video).
+const POTRERO_IDS = [...new Set(VIDEO_OPTIONS.map((v) => v.potreroId))]
 const VIDEO_STORAGE_KEY = 'vigia_video_seleccionado'
+const POTRERO_STORAGE_KEY = 'vigia_potrero_seleccionado'
+
+function seleccionInicial() {
+  try {
+    const potreroGuardado = Number(window.localStorage.getItem(POTRERO_STORAGE_KEY))
+    const potreroId = POTRERO_IDS.includes(potreroGuardado) ? potreroGuardado : POTRERO_IDS[0]
+    const videoGuardado = window.localStorage.getItem(VIDEO_STORAGE_KEY)
+    const opcionGuardada = VIDEO_OPTIONS.find((v) => v.key === videoGuardado && v.potreroId === potreroId)
+    const videoKey = opcionGuardada ? opcionGuardada.key : VIDEO_OPTIONS.find((v) => v.potreroId === potreroId).key
+    return { potreroId, videoKey }
+  } catch {
+    return { potreroId: POTRERO_IDS[0], videoKey: VIDEO_OPTIONS[0].key }
+  }
+}
+
+function persistirSeleccion(potreroId, videoKey) {
+  try {
+    window.localStorage.setItem(POTRERO_STORAGE_KEY, String(potreroId))
+    window.localStorage.setItem(VIDEO_STORAGE_KEY, videoKey)
+  } catch {
+    // localStorage no disponible (ej. navegación privada) — la selección solo
+    // dura la sesión actual de la pestaña, degradación aceptada.
+  }
+}
 
 // specs/004-drone-media/design.md — video real (frontend/public/video) con bounding boxes reales:
 // vision/simulator.py ahora "reconoce" cada detección contra el inventario real del potrero
@@ -34,16 +63,12 @@ const VIDEO_STORAGE_KEY = 'vigia_video_seleccionado'
 // toma un snapshot del video real cada CAPTURE_INTERVAL_MS y este panel guarda los últimos
 // MAX_CAPTURES en memoria (no persisten al recargar) para mostrarlos en CapturedImagesModal.
 export default function LiveFeedPanel({ detections, loading, error }) {
+  const { potreros } = usePotreros()
   const [now, setNow] = useState(() => new Date())
   const [captures, setCaptures] = useState([])
   const [galleryOpen, setGalleryOpen] = useState(false)
-  const [videoKey, setVideoKey] = useState(() => {
-    try {
-      return window.localStorage.getItem(VIDEO_STORAGE_KEY) || VIDEO_OPTIONS[0].key
-    } catch {
-      return VIDEO_OPTIONS[0].key
-    }
-  })
+  const [seleccion, setSeleccion] = useState(seleccionInicial)
+  const { potreroId, videoKey } = seleccion
   const nextIdRef = useRef(0)
 
   useEffect(() => {
@@ -76,21 +101,32 @@ export default function LiveFeedPanel({ detections, loading, error }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Paso 1: elegir el potrero -- se autoselecciona su primer (y hoy único) video
+  // y arranca el escaneo de una. Paso 2 (abajo) deja elegir OTRO video para ese
+  // mismo potrero si en el futuro hay más de uno mapeado.
+  function handlePotreroChange(event) {
+    const id = Number(event.target.value)
+    const primerVideo = VIDEO_OPTIONS.find((v) => v.potreroId === id)
+    if (!primerVideo) return
+    setSeleccion({ potreroId: id, videoKey: primerVideo.key })
+    persistirSeleccion(id, primerVideo.key)
+    iniciarEscaneo(primerVideo)
+  }
+
   function handleVideoChange(event) {
     const key = event.target.value
-    setVideoKey(key)
-    try {
-      window.localStorage.setItem(VIDEO_STORAGE_KEY, key)
-    } catch {
-      // localStorage no disponible (ej. navegación privada) — la selección solo
-      // dura la sesión actual de la pestaña, degradación aceptada.
-    }
     const opcion = VIDEO_OPTIONS.find((v) => v.key === key)
-    if (opcion) iniciarEscaneo(opcion)
+    if (!opcion) return
+    setSeleccion({ potreroId: opcion.potreroId, videoKey: opcion.key })
+    persistirSeleccion(opcion.potreroId, opcion.key)
+    iniciarEscaneo(opcion)
   }
 
   const videoOpcionActual = VIDEO_OPTIONS.find((v) => v.key === videoKey) ?? VIDEO_OPTIONS[0]
   const videoSrc = `/video/${videoOpcionActual.file}`
+  const videosDelPotrero = VIDEO_OPTIONS.filter((v) => v.potreroId === potreroId)
+  const potreroActual = potreros.find((p) => p.id === potreroId)
+  const potreroNombre = potreroActual?.name ?? `Potrero ${potreroId}`
 
   const handleCapture = useCallback((dataUrl) => {
     nextIdRef.current += 1
@@ -105,9 +141,19 @@ export default function LiveFeedPanel({ detections, loading, error }) {
         <div className="live-feed-panel__video-controls">
           {escaneando && <span className="live-feed-panel__scanning">Iniciando escaneo…</span>}
           <label className="live-feed-panel__video-select">
+            <span className="sr-only">Potrero a escanear</span>
+            <select value={potreroId} onChange={handlePotreroChange}>
+              {POTRERO_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {potreros.find((p) => p.id === id)?.name ?? `Potrero ${id}`}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="live-feed-panel__video-select">
             <span className="sr-only">Video de la fuente</span>
             <select value={videoKey} onChange={handleVideoChange}>
-              {VIDEO_OPTIONS.map((opt) => (
+              {videosDelPotrero.map((opt) => (
                 <option key={opt.key} value={opt.key}>
                   {opt.label}
                 </option>
@@ -141,6 +187,7 @@ export default function LiveFeedPanel({ detections, loading, error }) {
               <span className="live-feed-panel__badge-dot" aria-hidden="true" />
               VIVO
             </span>
+            <span className="live-feed-panel__potrero-badge">{potreroNombre}</span>
             <span className="live-feed-panel__timestamp mono">{formatTime(now.toISOString())}</span>
           </>
         )}

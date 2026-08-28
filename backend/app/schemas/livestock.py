@@ -33,5 +33,9 @@ class AnimalEsperado(BaseModel):
 class ReconciliacionOut(BaseModel):
     potrero: PotreroOut
     ventana_horas: int
+    # Total de detecciones reales de la ÚLTIMA sesión de escaneo (misión) de ESTE
+    # potrero en particular — persiste aunque se cambie de video/potrero en el
+    # panel en vivo, para verlo al entrar a Animales Monitoreados.
+    cantidad_escaneada: int
     animales_reales: list[AnimalReal]
     animales_esperados: list[AnimalEsperado]

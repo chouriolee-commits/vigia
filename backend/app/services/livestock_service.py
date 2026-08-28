@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
-from app.repositories import livestock_repository, potrero_repository
+from app.repositories import detection_repository, livestock_repository, mission_repository, potrero_repository
 from app.schemas.livestock import AnimalEsperado, AnimalReal, PotreroOut, ReconciliacionOut
 
 RECONCILIATION_WINDOW_HOURS = 2
@@ -59,9 +59,15 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
         for a in esperados
     ]
 
+    mision_potrero = mission_repository.get_latest_by_potrero(db, potrero_id)
+    cantidad_escaneada = (
+        detection_repository.count_by_mission(db, mision_potrero.id) if mision_potrero else 0
+    )
+
     return ReconciliacionOut(
         potrero=PotreroOut(id=potrero.id, name=potrero.name),
         ventana_horas=RECONCILIATION_WINDOW_HOURS,
+        cantidad_escaneada=cantidad_escaneada,
         animales_reales=animales_reales,
         animales_esperados=animales_esperados,
     )

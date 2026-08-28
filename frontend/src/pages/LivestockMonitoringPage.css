@@ -28,6 +28,18 @@
   padding: 0.15rem 0.6rem;
 }
 
+/* Distinto del total de inventario (arriba): esto es lo que el último escaneo
+   con dron realmente contó en este potrero, no cuántos animales hay registrados. */
+.livestock-page__scanned {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--surface-2);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-pill);
+  padding: 0.15rem 0.6rem;
+}
+
 .livestock-page__header-actions {
   display: flex;
   align-items: center;
