@@ -66,7 +66,14 @@ export default function LivestockMonitoringPage() {
   return (
     <div className="livestock-page">
       <header className="livestock-page__header">
-        <h1>{data?.potrero?.name ?? 'Animales monitoreados'}</h1>
+        <h1>
+          {data?.potrero?.name ?? 'Animales monitoreados'}
+          {data && (
+            <span className="livestock-page__total">
+              {data.animales_esperados.length} {data.animales_esperados.length === 1 ? 'animal' : 'animales'}
+            </span>
+          )}
+        </h1>
         <div className="livestock-page__header-actions">
           {potreros.length > 1 && (
             <label className="livestock-page__potrero-select">

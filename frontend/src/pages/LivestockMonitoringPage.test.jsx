@@ -68,8 +68,14 @@ describe('LivestockMonitoringPage', () => {
     renderPage()
     expect(screen.getByText('En el potrero (real)')).toBeInTheDocument()
     expect(screen.getByText('Deberían estar (esperado)')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Potrero Norte' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Potrero Norte/ })).toBeInTheDocument()
     expect(screen.getAllByText('#024')).toHaveLength(2) // una fila en cada tabla
+  })
+
+  it('muestra el total de animales registrados junto al nombre del potrero', () => {
+    vi.mocked(useLivestockReconciliation).mockReturnValue({ data: RECONCILIATION_MOCK, loading: false, error: null })
+    renderPage()
+    expect(screen.getByText('2 animales')).toBeInTheDocument()
   })
 
   it('un animal esperado con detectado_recientemente:false se muestra como Faltante', () => {

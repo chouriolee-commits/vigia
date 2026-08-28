@@ -12,6 +12,20 @@
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.livestock-page__total {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.15rem 0.6rem;
 }
 
 .livestock-page__header-actions {
