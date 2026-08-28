@@ -11,8 +11,23 @@ def get(db: Session, livestock_id: int) -> Livestock | None:
 
 
 def count_active(db: Session) -> int:
-    """Total de animales bajo monitoreo (tarjeta 'Animales Monitoreados' del dashboard)."""
+    """Total de animales activos en el inventario (independiente de si se han detectado)."""
     return db.query(Livestock).filter(Livestock.status == "activo").count()
+
+
+def count_distinct_identified_since(db: Session, since: datetime) -> int:
+    """
+    Animales distintos con al menos una detección identificada desde `since` — lo que
+    la tarjeta 'Animales Monitoreados' del dashboard debe mostrar: cuántos animales
+    REALES está viendo el feed ahora mismo, no el inventario total registrado (ese
+    número no cambiaría nunca sin importar qué video/potrero se esté monitoreando).
+    """
+    return (
+        db.query(Detection.livestock_id)
+        .filter(Detection.livestock_id.isnot(None), Detection.detected_at >= since)
+        .distinct()
+        .count()
+    )
 
 
 def list_expected_in_potrero(db: Session, potrero_id: int) -> list[Livestock]:

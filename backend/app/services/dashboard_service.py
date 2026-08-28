@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
@@ -11,13 +11,16 @@ from app.schemas.dashboard import (
     EventosHoy,
     FeedDeteccion,
 )
-from app.services import event_service
+from app.services import event_service, livestock_service
 
 _ESTADOS_ABIERTOS = ["activa", "en_revision"]
 
 
 def get_dashboard_summary(db: Session) -> DashboardOut:
-    total_animales = livestock_repository.count_active(db)
+    # Animales DISTINTOS con detección real reciente — no el inventario total del
+    # sistema, que no cambiaría sin importar qué se esté monitoreando ahora mismo.
+    desde = datetime.now(timezone.utc) - timedelta(hours=livestock_service.RECONCILIATION_WINDOW_HOURS)
+    total_animales = livestock_repository.count_distinct_identified_since(db, desde)
 
     alertas_orm = alert_repository.list_by_status(db, _ESTADOS_ABIERTOS)
     alertas_activas = [
