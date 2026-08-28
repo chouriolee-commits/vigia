@@ -45,6 +45,16 @@ def test_deteccion_comportamiento_anomalo_genera_alerta_correspondiente(client, 
     assert alertas[0]["priority"] == "alta"
 
 
+def test_deteccion_anomala_con_motivo_usa_titulo_especifico(client, seed_media):
+    """El simulador de demo manda 'motivo' (ej. fiebre/celo/parto simulados) — debe
+    verse reflejado en el título de la alerta en vez del genérico."""
+    payload = {**DETECTION_PAYLOAD, "behavior": "anomalo", "motivo": "Sospecha de fiebre (40.6°C)"}
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=payload)
+
+    alertas = client.get("/api/alertas").json()
+    assert alertas[0]["title"] == "Sospecha de fiebre (40.6°C)"
+
+
 def test_deteccion_media_inexistente_devuelve_404(client):
     response = client.post("/api/media/9999/detecciones", json=DETECTION_PAYLOAD)
     assert response.status_code == 404

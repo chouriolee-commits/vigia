@@ -72,6 +72,7 @@ def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> Non
     frame sin aportar información útil. Se retoma cuando haya re-identificación.
     """
     if payload.behavior == "anomalo":
+        titulo = payload.motivo or "Comportamiento anómalo detectado"
         alert_repository.create(
             db,
             detection_id=detection.id,
@@ -80,6 +81,6 @@ def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> Non
             type="comportamiento_anomalo",
             priority="alta",
             status="activa",
-            title="Comportamiento anómalo detectado",
-            description=f"Detección {detection.id}: confianza {detection.confidence}",
+            title=titulo,
+            description=payload.motivo or f"Detección {detection.id}: confianza {detection.confidence}",
         )
