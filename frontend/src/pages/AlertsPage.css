@@ -1,0 +1,24 @@
+.alerts-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.alerts-page__header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alerts-page__status {
+  color: var(--text-dim);
+  padding: 1.5rem 0;
+}
+
+.alerts-page__status--error {
+  color: var(--danger);
+}

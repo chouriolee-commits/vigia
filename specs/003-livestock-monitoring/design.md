@@ -31,15 +31,16 @@ LivestockMonitoringPage
   "potrero": { "id": 1, "name": "Potrero Norte" },
   "ventana_horas": 2,
   "animales_reales": [
-    { "livestock_id": 24, "tag_code": "#024", "alias": null, "detected_at": "2026-08-27T10:45:00Z", "behavior": "anomalo", "confidence": 0.94, "es_esperado_aqui": true },
-    { "livestock_id": null, "tag_code": null, "alias": "Animal no identificado", "detected_at": "2026-08-27T10:40:00Z", "behavior": "pastoreo", "confidence": 0.71, "es_esperado_aqui": false }
+    { "livestock_id": 24, "livestock_tag": "#024", "alias": null, "detected_at": "2026-08-27T10:45:00Z", "behavior": "anomalo", "confidence": 0.94, "es_esperado_aqui": true },
+    { "livestock_id": null, "livestock_tag": null, "alias": "Animal no identificado", "detected_at": "2026-08-27T10:40:00Z", "behavior": "pastoreo", "confidence": 0.71, "es_esperado_aqui": false }
   ],
   "animales_esperados": [
-    { "livestock_id": 24, "tag_code": "#024", "species": "bovino", "breed": "Holstein", "status": "activo", "detectado_recientemente": true },
-    { "livestock_id": 30, "tag_code": "#030", "species": "bovino", "breed": "Angus", "status": "activo", "detectado_recientemente": false }
+    { "livestock_id": 24, "livestock_tag": "#024", "species": "bovino", "breed": "Holstein", "status": "activo", "detectado_recientemente": true },
+    { "livestock_id": 30, "livestock_tag": "#030", "species": "bovino", "breed": "Angus", "status": "activo", "detectado_recientemente": false }
   ]
 }
 ```
+> Campo unificado con el resto de specs: `livestock_id` + `livestock_tag` (ver nota de consistencia en `005-yolov8-detection/design.md`). En PostgreSQL la columna real sigue siendo `tag_code` (`008-postgresql-data-model`); `livestock_tag` es el nombre de campo en el contrato de API/mock.
 
 ## Modelo de datos
 Usa `livestock`, `detections`, `potreros` de `008-postgresql-data-model`. La query de reconciliación (definida en `008/design.md`) se encapsula en `backend/app/repositories/livestock_repository.py` (acceso a datos) y se enriquece (marcado de faltante/desconocido) en `backend/app/services/livestock_service.py`.

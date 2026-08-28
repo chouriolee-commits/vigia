@@ -56,7 +56,7 @@ entonces regresa a "/".
 ## Casos límite
 - Potrero sin ningún animal esperado (tabla esperados vacía) pero con detecciones (todas marcadas como desconocidas/fuera de potrero).
 - Potrero con animales esperados pero sin ninguna detección reciente (todos marcados como faltantes, tabla real vacía).
-- Empate de nombres/alias entre animales (se distingue siempre por `tag_code`, nunca solo por alias).
+- Empate de nombres/alias entre animales (se distingue siempre por `livestock_tag`, nunca solo por alias).
 
 ## Restricciones
 - La lógica de reconciliación (comparar esperado vs. real) vive en el backend (`backend/app/services/livestock_service.py`), el frontend solo renderiza el resultado ya resuelto.

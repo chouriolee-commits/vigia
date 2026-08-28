@@ -1,0 +1,67 @@
+import { ALERT_TYPE_LABEL, BEHAVIOR_LABEL, formatConfidence, PRIORITY_LABEL } from '../../utils/format'
+
+// Heurística de respuesta — specs/007-ai-assistant/design.md.
+// Regla no negociable: responde SIEMPRE a partir de `context` (alertas/detecciones reales
+// del mismo dashboard), nunca con texto genérico desconectado del sistema.
+const FALLBACK = 'No tengo información específica sobre eso todavía. Puedo ayudarte con animales, alertas o eventos recientes.'
+
+function findAnimalTag(message) {
+  const match = message.match(/#?(\d{1,4})/)
+  return match ? `#${match[1]}` : null
+}
+
+export function getAssistantReplyMock(message, context = {}) {
+  const alertas = context.alertas_activas ?? []
+  const detecciones = context.detecciones_recientes ?? []
+  const text = message.toLowerCase()
+
+  const tag = findAnimalTag(message)
+  if (tag) {
+    const alert = alertas.find((a) => a.livestock_tag === tag)
+    if (alert) {
+      return {
+        role: 'assistant',
+        content: `${tag}: ${alert.description}${alert.confidence != null ? ` (confidence ${formatConfidence(alert.confidence)})` : ''}. Prioridad ${PRIORITY_LABEL[alert.priority]?.toLowerCase()}.`,
+        suggested_action: { label: 'Ver análisis', route: '/alertas' },
+      }
+    }
+    const detection = detecciones.find((d) => d.livestock_tag === tag)
+    if (detection) {
+      return {
+        role: 'assistant',
+        content: `${tag} fue detectado con comportamiento "${BEHAVIOR_LABEL[detection.behavior] ?? detection.behavior}" (confidence ${formatConfidence(detection.confidence)}). No tiene alertas activas.`,
+        suggested_action: { label: 'Ver animales monitoreados', route: '/animales' },
+      }
+    }
+    return { role: 'assistant', content: `No encuentro a ${tag} en las detecciones ni alertas recientes.` }
+  }
+
+  if (text.includes('atenci')) {
+    if (alertas.length === 0) return { role: 'assistant', content: 'Ningún animal requiere atención en este momento.' }
+    const lines = alertas
+      .map((a) => `${a.livestock_tag ?? 'animal no identificado'} — ${ALERT_TYPE_LABEL[a.type] ?? a.type} (prioridad ${PRIORITY_LABEL[a.priority]?.toLowerCase()})`)
+      .join('; ')
+    return { role: 'assistant', content: `Animales que requieren atención: ${lines}.`, suggested_action: { label: 'Ver alertas', route: '/alertas' } }
+  }
+
+  if (text.includes('último monitoreo') || text.includes('ultimo monitoreo') || text.includes('qué ocurrió') || text.includes('que ocurrio')) {
+    if (detecciones.length === 0) return { role: 'assistant', content: 'Todavía no hay detecciones registradas en este monitoreo.' }
+    const lines = detecciones
+      .slice(0, 4)
+      .map((d) => `${d.livestock_tag ?? 'animal no identificado'} (${BEHAVIOR_LABEL[d.behavior] ?? d.behavior})`)
+      .join(', ')
+    return { role: 'assistant', content: `En el último monitoreo se detectaron: ${lines}.` }
+  }
+
+  if (text.includes('por qué') || text.includes('por que')) {
+    const latest = alertas[0]
+    if (!latest) return { role: 'assistant', content: 'No hay alertas activas para explicar en este momento.' }
+    return {
+      role: 'assistant',
+      content: `La alerta más reciente (${latest.livestock_tag ?? 'sin animal identificado'}) se generó porque: ${latest.description}`,
+      suggested_action: { label: 'Ver análisis', route: '/alertas' },
+    }
+  }
+
+  return { role: 'assistant', content: FALLBACK }
+}

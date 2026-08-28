@@ -10,6 +10,6 @@
 - [ ] Crear `services/dashboardService.js` (`getDashboardSummary()`) que hoy resuelve con el mock.
 - [ ] Crear hook `hooks/useDashboardData.js` (`{ data, loading, error }`).
 - [ ] Crear `pages/DashboardPage.jsx` componiendo `LiveFeedPanel`, 3× `KpiCard`, `DetectedEventPanel`, `AiAssistantPanel`.
-- [ ] Configurar rutas en `router.jsx`: solo `/`, `/animales`, `/alertas`, `/eventos` (ninguna ruta adicional).
+- [ ] Configurar rutas en `router.jsx`: `/login` (pública, `013-authentication`) + `/`, `/animales`, `/alertas`, `/eventos` protegidas por `RequireAuth` (ninguna ruta adicional).
 - [ ] Verificar responsive: desktop (grid 2 columnas) y mobile (apilado + bottom nav) contra `fotos-diseño/`.
 - [ ] Escribir tests (ver `tests.md`).

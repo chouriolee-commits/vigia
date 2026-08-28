@@ -1,0 +1,26 @@
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  flex: none;
+}
+
+.brand-logo__img {
+  display: block;
+  width: auto;
+}
+
+.brand-logo--sm .brand-logo__img {
+  height: 50px;
+}
+
+.brand-logo--lg .brand-logo__img {
+  height: 80px;
+}
+
+@media (max-width: 480px) {
+  .brand-logo--lg .brand-logo__img {
+    height: 60px;
+  }
+}

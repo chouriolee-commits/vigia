@@ -10,7 +10,7 @@
 | Link "Ver análisis →" | `/alertas` | `006-alert-system` (reutilizada, no nueva pantalla) |
 | Botón "Revisar imágenes capturadas" | ninguna (sin navegación en MVP) | `004-drone-media` |
 
-Toda ruta que no sea `/` renderiza un `BackButton` ("← Volver" → `navigate('/')`). No existen más rutas que estas 4 en el MVP.
+Toda ruta que no sea `/` renderiza un `BackButton` ("← Volver" → `navigate('/')`). No existen más rutas que estas 4 dentro de la app autenticada — la única ruta adicional en todo el MVP es `/login` (pública, `013-authentication`), que no se navega desde el dashboard sino que lo antecede.
 
 ## Rutas (React Router)
 ```
@@ -50,10 +50,10 @@ DashboardPage
     { "id": 101, "livestock_tag": "#024", "type": "comportamiento_anomalo", "priority": "alta", "status": "activa", "description": "Patrón de movimiento errático y aislamiento del rebaño.", "confidence": 0.94, "created_at": "2026-08-27T10:45:00Z" }
   ],
   "eventos_hoy": { "total": 5 },
-  "evento_detectado": { "animal_id": 24, "animal_tag": "#024", "titulo": "Atención requerida", "descripcion": "Comportamiento inusual detectado...", "confidence": 0.94, "alert_id": 101 },
+  "evento_detectado": { "livestock_id": 24, "livestock_tag": "#024", "titulo": "Atención requerida", "descripcion": "Comportamiento inusual detectado...", "confidence": 0.94, "alert_id": 101 },
   "feed_detecciones": [
-    { "animal_id": 24, "bbox": {"x":0.42,"y":0.3,"width":0.08,"height":0.1}, "behavior": "anomalo" },
-    { "animal_id": 55, "bbox": {"x":0.63,"y":0.45,"width":0.09,"height":0.11}, "behavior": "descanso" }
+    { "livestock_id": 24, "livestock_tag": "#024", "bbox": {"x":0.42,"y":0.3,"width":0.08,"height":0.1}, "behavior": "anomalo" },
+    { "livestock_id": 55, "livestock_tag": "#055", "bbox": {"x":0.63,"y":0.45,"width":0.09,"height":0.11}, "behavior": "descanso" }
   ]
 }
 ```
@@ -63,4 +63,4 @@ Nótese que `alertas_activas` viaja completo (no solo el conteo) — es el mismo
 ## Decisiones técnicas
 - Las 3 KPI cards son componentes activos (`onClick` + accesibilidad de teclado).
 - El "evento detectado" es siempre el de mayor prioridad/más reciente de `alertas_activas`.
-- `feed_detecciones` reutiliza el mismo shape que el contrato de `005-yolov8-detection`.
+- `feed_detecciones` reutiliza el mismo shape que el contrato de `005-yolov8-detection` — incluye `livestock_id` **y** `livestock_tag` (no solo el id) para que `DetectionLabel` pueda mostrar "Animal #024 - Comportamiento: X" sin ir a buscar el tag a otro lado.

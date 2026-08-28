@@ -1,0 +1,82 @@
+/*
+  Tokens de VIGÍA — fuente única de colores/tipografía.
+  Ver skills/frontend/skill.md ("Tokens de color"). No definir hex fuera de este archivo.
+  App de una sola identidad visual (dark), fiel a fotos-diseño/ — sin modo claro.
+*/
+
+:root {
+  /* superficie — navy oscuro (fotos-diseño/), NO verdoso */
+  --bg: #12141d;
+  --surface: #1c1f2c;
+  --surface-2: #242838;
+  --border: #2b2f40;
+
+  /* texto */
+  --text: #f2f4f8;
+  --text-dim: #a3aabd;
+  --text-faint: #6c7387;
+
+  /* acento de marca — verde menta de fotos-diseño/ (logo VIGÍA, bounding boxes, KPIs) */
+  --accent: #3ddc84;
+  --accent-soft: #163524;
+  --accent-ink: #05170d;
+
+  /* estado semántico (prioridad de alertas / errores) — separado del acento de marca */
+  --danger: #ef4444;
+  --danger-soft: #2a1414;
+  --warning: #f59e0b;
+  --warning-soft: #2a2010;
+  --info: #38bdf8;
+  --info-soft: #10242c;
+
+  /* tipografía */
+  --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
+
+  /* layout */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shell-max-width: 1400px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+/* utilidad compartida: dato numérico/técnico (horas, IDs, coordenadas, confidence) */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

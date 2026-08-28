@@ -1,0 +1,7 @@
+.event-type-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}

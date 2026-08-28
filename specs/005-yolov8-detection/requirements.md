@@ -16,7 +16,7 @@ Operador (consumidor visual); backend/vision (productores del contrato).
 ### MVP obligatorio
 - RF1 **[MVP]** Contrato de detección único:
   ```
-  { id, media_id, livestock_id | null, potrero_id, animal_label, bbox: {x,y,width,height} (0–1), confidence (0–1), behavior, detected_at, model_version }
+  { id, media_id, livestock_id | null, livestock_tag | null, potrero_id, bbox: {x,y,width,height} (0–1), confidence (0–1), behavior, detected_at, model_version }
   ```
 - RF2 **[MVP]** `DetectionOverlay`: dibuja bounding boxes sobre una imagen dado un array de detecciones. Reutilizado por `LiveFeedPanel`.
 - RF3 **[MVP]** Etiqueta visual: `Animal #<tag> - Comportamiento: <behavior>` (fiel al diseño).

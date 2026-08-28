@@ -7,8 +7,8 @@
   "id": 555,
   "media_id": 501,
   "livestock_id": 24,
+  "livestock_tag": "#024",
   "potrero_id": 1,
-  "animal_label": "#024",
   "bbox": { "x": 0.42, "y": 0.30, "width": 0.08, "height": 0.10 },
   "confidence": 0.94,
   "behavior": "anomalo",
@@ -16,6 +16,8 @@
   "model_version": "yolov8n-coco-pretrained"
 }
 ```
+
+> **Nota de consistencia:** `livestock_id` (FK, nullable) + `livestock_tag` (string mostrable, ej. `"#024"`, nullable si no hay match) son los **únicos** nombres de campo para "el animal" en todos los contratos del proyecto — los usan igual `002-dashboard`, `003-livestock-monitoring`, `006-alert-system`, `007-ai-assistant` y `012-events-log`. Ninguna spec debe reintroducir variantes como `animal_id`, `animal_label` o `tag_code` en un contrato de API/mock (`tag_code` sigue siendo el nombre correcto solo dentro de la tabla `livestock` en PostgreSQL, `008-postgresql-data-model` — el mapeo `tag_code → livestock_tag` ocurre al serializar la respuesta).
 
 ## Mapeo de color por comportamiento
 | behavior | Color bbox |

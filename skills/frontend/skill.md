@@ -29,8 +29,28 @@ React, JavaScript (no TypeScript salvo justificación), Vite, React Router, CSS 
 - Nombrar componentes y archivos en PascalCase (`AlertCard.jsx`), hooks en camelCase con prefijo `use` (`useAlerts.js`), servicios en camelCase (`alertService.js`).
 - Un componente recibe datos y callbacks por props; no accede a estado global salvo que la spec lo requiera explícitamente.
 - Loading, error y empty state son obligatorios en cualquier componente que consuma datos asíncronos (aunque el mock resuelva instantáneo, el contrato del hook debe exponer `{ data, loading, error }`).
-- CSS organizado por componente/página (co-ubicado o en `styles/`), evitando estilos globales salvo variables de tema (colores, tipografía) en un archivo central (`theme.css` o `variables.css`).
+- CSS organizado por componente/página (co-ubicado o en `styles/`), evitando estilos globales salvo variables de tema (colores, tipografía) en un archivo central (`frontend/src/styles/theme.css`).
 - Paleta y tono visual: fondo oscuro (dark UI), acentos en verde/teal (identidad "VIGÍA"), tipografía técnica/monoespaciada para datos (hora, IDs, coordenadas), iconografía simple — consistente con `fotos-diseño/`.
+
+### Tokens de color (fuente única — no improvisar hex por pantalla)
+
+Se crean como custom properties de CSS en `frontend/src/styles/theme.css`, cargado una sola vez en `main.jsx`/`App.jsx`. Ninguna spec ni componente define un color hexadecimal fuera de esta tabla.
+
+| Token | Valor | Uso |
+|---|---|---|
+| `--bg` | `#0a1210` | Fondo de página (dashboard, login, todas las pantallas) |
+| `--surface` | `#101c17` | Cards, `AuthCard`, paneles (evento detectado, chat) |
+| `--surface-2` | `#14231d` | Superficie anidada / hover de filas de tabla |
+| `--border` | `#223730` | Bordes de cards, tablas, inputs |
+| `--text` | `#e8f2ec` | Texto principal |
+| `--text-dim` | `#a2b6ac` | Texto secundario (subtítulos, timestamps, sublabels) |
+| `--accent` | `#3ddc9a` | Acento de marca: botones primarios, wordmark "VIGÍA", badge "VIVO"/"REC", bbox de comportamiento `descanso`/`anomalo`, foco de inputs |
+| `--accent-ink` | `#06120d` | Texto sobre fondo `--accent` (ej. texto del botón "Iniciar sesión") |
+| `--danger` | `#ef4444` | Error de formulario (login/registro), prioridad de alerta `critica` |
+| `--warning` | `#f59e0b` | Prioridad de alerta `alta` |
+| `--info` | `#38bdf8` | Prioridad de alerta `media` |
+
+Prioridad `baja` y estado "faltante/ok" neutro usan `--text-dim`/`--border`, no un color semántico nuevo. Este es el **mismo mapeo de prioridad** que usan `002-dashboard` (badges de `alertas_activas`), `006-alert-system` (columna Prioridad) y `012-events-log` — ninguna de esas specs vuelve a definir sus propios colores de prioridad.
 
 ## Restricciones
 - No agregar librerías de UI pesadas (Material UI, Ant Design, etc.) salvo justificación explícita y aprobada en el `design.md` de la spec.

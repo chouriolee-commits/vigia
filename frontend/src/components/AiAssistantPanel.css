@@ -1,0 +1,39 @@
+.ai-assistant-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.2rem;
+}
+
+.ai-assistant-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.ai-assistant-panel__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex: none;
+}
+
+.ai-assistant-panel__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ai-assistant-panel__subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}

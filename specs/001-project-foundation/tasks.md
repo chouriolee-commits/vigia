@@ -6,7 +6,8 @@
 - [ ] Inicializar `frontend/` con Vite + React (JavaScript template).
 - [ ] Instalar y configurar React Router en `frontend/`.
 - [ ] Configurar Vitest + React Testing Library en `frontend/`.
-- [ ] Crear estructura `frontend/src/{components,pages,layouts,hooks,services,utils,types,assets}`.
+- [ ] Crear estructura `frontend/src/{components,pages,layouts,hooks,services,utils,types,assets,styles}`.
+- [ ] Crear `frontend/src/styles/theme.css` con los tokens de color de `skills/frontend/skill.md` (`--bg`, `--surface`, `--accent`, etc.) e importarlo una sola vez en `main.jsx`.
 - [ ] Validar que `npm run dev` levanta el frontend sin errores.
 
 ## Fase futura (solo si el tiempo alcanza tras completar 002, 003, 006, 007, 012)
