@@ -47,6 +47,18 @@ const ANIMAL_FOCO = {
   confidence: null,
 }
 
+const ALERTA_FOCO = {
+  livestock_tag: '#030',
+  potrero_name: 'Potrero Norte',
+  type: 'animal_faltante',
+  priority: 'media',
+  status: 'activa',
+  title: '#030 no registra detecciones recientes',
+  description: '#030 no registra detecciones en Potrero Norte durante la última ventana de monitoreo (2 h).',
+  confidence: null,
+  created_at: '2026-08-27T09:00:00Z',
+}
+
 function renderPanel(props = {}) {
   return render(
     <MemoryRouter>
@@ -124,6 +136,31 @@ describe('AiAssistantPanel', () => {
     })
     expect(context.animal_foco).not.toHaveProperty('livestock_id')
     expect(context.animal_foco).not.toHaveProperty('confidence')
+  })
+
+  it('con alertaFoco (llegó desde /alertas), el mensaje inicial es la ficha de la alerta, no el aviso de evento_detectado', () => {
+    vi.mocked(useChat).mockReturnValue({ messages: [], isTyping: false, send: vi.fn() })
+    renderPanel({ alertaFoco: ALERTA_FOCO })
+
+    const [{ context, initialMessages }] = vi.mocked(useChat).mock.calls[0]
+    expect(initialMessages).toHaveLength(1)
+    expect(initialMessages[0].content).toContain('#030 no registra detecciones recientes')
+    expect(initialMessages[0].content).toContain('Media')
+    expect(initialMessages[0].content).toContain('Potrero Norte')
+    expect(initialMessages[0].suggested_action).toBeUndefined()
+
+    // El contexto que viaja al modelo incluye la alerta enfocada, sin confidence.
+    expect(context.alerta_foco).toEqual({
+      type: 'animal_faltante',
+      priority: 'media',
+      status: 'activa',
+      title: '#030 no registra detecciones recientes',
+      description: '#030 no registra detecciones en Potrero Norte durante la última ventana de monitoreo (2 h).',
+      livestock_tag: '#030',
+      potrero: 'Potrero Norte',
+      created_at: '2026-08-27T09:00:00Z',
+    })
+    expect(context.alerta_foco).not.toHaveProperty('confidence')
   })
 
   it('sin evento_detectado no genera mensaje inicial', () => {

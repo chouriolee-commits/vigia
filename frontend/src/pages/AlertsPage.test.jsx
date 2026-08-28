@@ -1,16 +1,28 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AlertsPage from './AlertsPage'
 import { useAlerts } from '../hooks/useAlerts'
 
 vi.mock('../hooks/useAlerts')
 
+// Simula el dashboard real: solo muestra el alertaFoco recibido por navigate(state)
+// para poder verificar qué llegó, sin montar DashboardPage completo.
+function DashboardHomeStub() {
+  const { state } = useLocation()
+  return (
+    <div>
+      Dashboard Home
+      {state?.alertaFoco && <p>alertaFoco: {JSON.stringify(state.alertaFoco)}</p>}
+    </div>
+  )
+}
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/alertas']}>
       <Routes>
-        <Route path="/" element={<div>Dashboard Home</div>} />
+        <Route path="/" element={<DashboardHomeStub />} />
         <Route path="/alertas" element={<AlertsPage />} />
       </Routes>
     </MemoryRouter>,
@@ -88,6 +100,35 @@ describe('AlertsPage', () => {
     vi.mocked(useAlerts).mockReturnValue({ data: [], loading: false, error: null })
     renderPage()
     expect(screen.getByText('No hay alertas activas.')).toBeInTheDocument()
+  })
+
+  it('click en una fila manda al asistente con la ficha completa de la alerta', () => {
+    vi.mocked(useAlerts).mockReturnValue({ data: ALERTS_MOCK, loading: false, error: null })
+    renderPage()
+    const rows = screen.getAllByRole('row').slice(1)
+    fireEvent.click(rows[0])
+    expect(screen.getByText('Dashboard Home')).toBeInTheDocument()
+    const ficha = JSON.parse(screen.getByText(/alertaFoco:/).textContent.replace('alertaFoco: ', ''))
+    expect(ficha).toMatchObject({
+      livestock_tag: '#024',
+      potrero_name: 'Potrero Norte',
+      type: 'comportamiento_anomalo',
+      priority: 'alta',
+      status: 'activa',
+      title: 'Comportamiento inusual detectado',
+      description: 'Patrón de movimiento errático y aislamiento del rebaño.',
+    })
+  })
+
+  it('click en una alerta sin animal asociado (livestock_id null) igual navega con su ficha', () => {
+    vi.mocked(useAlerts).mockReturnValue({ data: ALERTS_MOCK, loading: false, error: null })
+    renderPage()
+    const rows = screen.getAllByRole('row').slice(1)
+    fireEvent.click(rows[1])
+    expect(screen.getByText('Dashboard Home')).toBeInTheDocument()
+    const ficha = JSON.parse(screen.getByText(/alertaFoco:/).textContent.replace('alertaFoco: ', ''))
+    expect(ficha.livestock_tag).toBeNull()
+    expect(ficha.title).toBe('Detección sin identificar')
   })
 
   it('click en "Volver" navega a "/"', () => {

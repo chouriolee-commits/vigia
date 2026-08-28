@@ -114,3 +114,55 @@ describe('aiService.sendMessage con animal_foco (llegó desde /animales)', () =>
     expect(reply.content).toContain('Patrón de movimiento errático y aislamiento del rebaño.')
   })
 })
+
+// specs/006-alert-system: click en una fila de /alertas manda al asistente con
+// context.alerta_foco -- preguntas sobre "esta alerta" deben responder con SUS datos,
+// no con la alerta más reciente del listado general.
+describe('aiService.sendMessage con alerta_foco (llegó desde /alertas)', () => {
+  const CONTEXT_CON_ALERTA_FOCO = {
+    ...CONTEXT,
+    alerta_foco: {
+      type: 'animal_faltante',
+      priority: 'media',
+      status: 'activa',
+      title: '#030 no registra detecciones recientes',
+      description: '#030 no registra detecciones en Potrero Norte durante la última ventana de monitoreo (2 h).',
+      livestock_tag: '#030',
+      potrero: 'Potrero Norte',
+      created_at: '2026-08-27T09:00:00Z',
+    },
+  }
+
+  it('pregunta por "tipo" responde con el tipo de la alerta enfocada', async () => {
+    const reply = await sendMessage('¿qué tipo de alerta es?', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content.toLowerCase()).toContain('animal faltante')
+  })
+
+  it('pregunta por "prioridad" responde con la prioridad de la alerta enfocada', async () => {
+    const reply = await sendMessage('¿qué prioridad tiene?', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content.toLowerCase()).toContain('media')
+  })
+
+  it('pregunta por "potrero" responde con la ubicación de la alerta enfocada', async () => {
+    const reply = await sendMessage('¿en qué potrero ocurrió?', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content).toContain('Potrero Norte')
+  })
+
+  it('pregunta "por qué" responde con la descripción de LA ALERTA ENFOCADA, no la más reciente del listado general', async () => {
+    const reply = await sendMessage('¿por qué se generó esta alerta?', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content).toContain('#030 no registra detecciones en Potrero Norte durante la última ventana de monitoreo (2 h).')
+    expect(reply.content).not.toContain('Patrón de movimiento errático')
+  })
+
+  it('una pregunta genérica igual responde con la ficha de la alerta enfocada, no el fallback vacío', async () => {
+    const reply = await sendMessage('cuéntame más', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content).toContain('#030 no registra detecciones recientes')
+    expect(reply.content).not.toMatch(/no tengo información específica/i)
+  })
+
+  it('preguntar por "atención" con alerta_foco presente sigue listando todas las alertas activas del dashboard', async () => {
+    const reply = await sendMessage('¿qué animales requieren atención?', CONTEXT_CON_ALERTA_FOCO)
+    expect(reply.content).toContain('#024')
+    expect(reply.content).toContain('#030')
+  })
+})

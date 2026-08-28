@@ -3,19 +3,21 @@ import { useChat } from '../hooks/useChat'
 import ChatMessageList from './ChatMessageList'
 import ChatInput from './ChatInput'
 import { BotIcon } from './icons'
-import { formatDateTime, BEHAVIOR_LABEL } from '../utils/format'
+import { formatDateTime, BEHAVIOR_LABEL, PRIORITY_LABEL, ALERT_TYPE_LABEL, STATUS_LABEL } from '../utils/format'
 import './AiAssistantPanel.css'
 
 // specs/007-ai-assistant/design.md — `context` es el mismo objeto (alertas + detecciones reales)
 // que ya consume el dashboard: esto es lo que hace que la respuesta no sea un chatbot decorativo.
 // Nunca llama a aiService directamente: todo pasa por useChat (regla 4 de la tarea).
 //
-// `animalFoco` (opcional): llega desde /animales cuando el usuario hace click en un animal de
-// la tabla (LivestockMonitoringPage → navigate('/', { state: { animalFoco } })). Cuando está
-// presente, el mensaje inicial del asistente pasa a ser la ficha completa de ESE animal en vez
-// del aviso genérico de evento_detectado, y el contexto que viaja al modelo incluye sus datos
-// para que las preguntas de seguimiento ("¿por qué está así?", "¿qué raza es?") tengan grounding.
-export default function AiAssistantPanel({ data, animalFoco }) {
+// `animalFoco`/`alertaFoco` (opcionales, mutuamente excluyentes en la práctica): llegan desde
+// /animales o /alertas cuando el usuario hace click en una fila (LivestockMonitoringPage /
+// AlertsPage → navigate('/', { state: { animalFoco | alertaFoco } })). Cuando alguno está
+// presente, el mensaje inicial del asistente pasa a ser la ficha completa de ESE animal/alerta
+// en vez del aviso genérico de evento_detectado, y el contexto que viaja al modelo incluye sus
+// datos para que las preguntas de seguimiento tengan grounding. animalFoco tiene prioridad si
+// por algún motivo ambos llegaran a estar presentes.
+export default function AiAssistantPanel({ data, animalFoco, alertaFoco }) {
   // El cliente no es técnico: el contexto que le llega al modelo (mock o Groq real) solo
   // trae campos que un productor entiende. Nunca se manda bbox/coordenadas/ids/confidence —
   // así el dato técnico no puede "salírsele" al modelo en una respuesta, porque nunca lo tiene.
@@ -43,8 +45,20 @@ export default function AiAssistantPanel({ data, animalFoco }) {
           es_esperado_aqui: animalFoco.es_esperado_aqui,
         },
       }),
+      ...(alertaFoco && {
+        alerta_foco: {
+          type: alertaFoco.type,
+          priority: alertaFoco.priority,
+          status: alertaFoco.status,
+          title: alertaFoco.title,
+          description: alertaFoco.description,
+          livestock_tag: alertaFoco.livestock_tag,
+          potrero: alertaFoco.potrero_name,
+          created_at: alertaFoco.created_at,
+        },
+      }),
     }),
-    [data, animalFoco],
+    [data, animalFoco, alertaFoco],
   )
 
   // Solo se calcula una vez al montar (useChat guarda el estado inicial con useState) — como
@@ -62,6 +76,21 @@ export default function AiAssistantPanel({ data, animalFoco }) {
         `• Comportamiento: ${animalFoco.comportamiento ? (BEHAVIOR_LABEL[animalFoco.comportamiento] ?? animalFoco.comportamiento) : '—'}`,
         '',
         '¿Qué quieres saber sobre este animal?',
+      ]
+      return [{ role: 'assistant', content: ficha.join('\n') }]
+    }
+    if (alertaFoco) {
+      const ficha = [
+        `Esta es la alerta "${alertaFoco.title}":`,
+        `• Tipo: ${ALERT_TYPE_LABEL[alertaFoco.type] ?? alertaFoco.type}`,
+        `• Prioridad: ${PRIORITY_LABEL[alertaFoco.priority] ?? alertaFoco.priority}`,
+        `• Estado: ${STATUS_LABEL[alertaFoco.status] ?? alertaFoco.status}`,
+        `• Animal: ${alertaFoco.livestock_tag ?? 'sin animal asociado'}`,
+        `• Potrero: ${alertaFoco.potrero_name ?? '—'}`,
+        `• Fecha: ${formatDateTime(alertaFoco.created_at)}`,
+        `• Descripción: ${alertaFoco.description ?? '—'}`,
+        '',
+        '¿Qué quieres saber sobre esta alerta?',
       ]
       return [{ role: 'assistant', content: ficha.join('\n') }]
     }

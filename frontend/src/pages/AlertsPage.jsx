@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useAlerts } from '../hooks/useAlerts'
 import BackButton from '../components/BackButton'
 import LivestockTable from '../components/LivestockTable'
@@ -30,8 +31,31 @@ const COLUMNS = [
   },
 ]
 
+// Click en cualquier fila manda directo al asistente de IA (dashboard `/`) con
+// toda la información de ESA alerta ya cargada -- mismo patrón que las filas
+// de animales en LivestockMonitoringPage, ver esa página para el porqué de
+// usar navigate(state) en vez de un query param.
+function armarAlertaFoco(row) {
+  return {
+    livestock_tag: row.livestock_tag,
+    potrero_name: row.potrero_name,
+    type: row.type,
+    priority: row.priority,
+    status: row.status,
+    title: row.title,
+    description: row.description,
+    confidence: row.confidence,
+    created_at: row.created_at,
+  }
+}
+
 export default function AlertsPage() {
+  const navigate = useNavigate()
   const { data, loading, error } = useAlerts()
+
+  function handleRowClick(row) {
+    navigate('/', { state: { alertaFoco: armarAlertaFoco(row) } })
+  }
 
   return (
     <div className="alerts-page">
@@ -47,7 +71,13 @@ export default function AlertsPage() {
         </p>
       )}
       {!loading && !error && (
-        <LivestockTable columns={COLUMNS} rows={data ?? []} rowKey="id" emptyMessage="No hay alertas activas." />
+        <LivestockTable
+          columns={COLUMNS}
+          rows={data ?? []}
+          rowKey="id"
+          emptyMessage="No hay alertas activas."
+          onRowClick={handleRowClick}
+        />
       )}
     </div>
   )
