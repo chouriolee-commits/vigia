@@ -7,6 +7,43 @@
   background: #0d1f16;
 }
 
+.detection-overlay--video {
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detection-overlay__video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.detection-overlay__mute-btn {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(6, 12, 10, 0.75);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.detection-overlay__mute-btn:hover,
+.detection-overlay__mute-btn:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .detection-overlay__field {
   position: absolute;
   inset: 0;

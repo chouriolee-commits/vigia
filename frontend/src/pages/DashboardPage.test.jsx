@@ -3,12 +3,8 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import DashboardPage from './DashboardPage'
 import { useDashboardData } from '../hooks/useDashboardData'
-import { useLiveFeed } from '../hooks/useLiveFeed'
 
 vi.mock('../hooks/useDashboardData')
-vi.mock('../hooks/useLiveFeed')
-
-const NOW = new Date('2026-08-27T10:45:32Z')
 
 const DASHBOARD_MOCK = {
   animales_monitoreados: { total: 24, actualizado_at: '2026-08-27T10:45:00Z' },
@@ -54,13 +50,6 @@ function renderDashboard() {
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.mocked(useDashboardData).mockReset()
-    vi.mocked(useLiveFeed).mockReset()
-    vi.mocked(useLiveFeed).mockReturnValue({
-      frame: { potreroName: 'Potrero Norte', detections: DASHBOARD_MOCK.feed_detecciones },
-      now: NOW,
-      loading: false,
-      error: null,
-    })
   })
 
   it('muestra estado de carga mientras loading es true (no pantalla en blanco)', () => {
@@ -154,14 +143,8 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Sin eventos recientes')).toBeInTheDocument()
   })
 
-  it('feed_detecciones vacío: el feed se muestra sin overlays y sin error', () => {
+  it('el feed no muestra bounding boxes (detecciones no sincronizadas con el video, se ven incoherentes)', () => {
     vi.mocked(useDashboardData).mockReturnValue({ data: DASHBOARD_MOCK, loading: false, error: null })
-    vi.mocked(useLiveFeed).mockReturnValue({
-      frame: { potreroName: 'Potrero Norte', detections: [] },
-      now: NOW,
-      loading: false,
-      error: null,
-    })
     renderDashboard()
     // "Animal #024" sigue existiendo en el panel de evento detectado (dato distinto al feed);
     // lo que valida este caso es que el feed no muestre la etiqueta "Comportamiento: ..." de una detección.

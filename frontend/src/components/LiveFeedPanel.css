@@ -89,11 +89,24 @@
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0.75rem 1rem;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 .live-feed-panel__gallery-btn:hover,
 .live-feed-panel__gallery-btn:focus-visible {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+.live-feed-panel__gallery-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.35rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
 }

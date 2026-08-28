@@ -1,7 +1,6 @@
 import { getActiveAlertsMock } from './alerts.mock'
 import { getEventsTodayMock } from './events.mock'
-import { getLiveFeedFrameMock } from './liveFeed.mock'
-import { LIVESTOCK } from './seed'
+import { DETECTIONS, LIVESTOCK, MIN_DETECTION_CONFIDENCE } from './seed'
 
 // Contrato: specs/002-dashboard/design.md — GET /api/dashboard
 export function getDashboardSummaryMock() {
@@ -20,6 +19,11 @@ export function getDashboardSummaryMock() {
       confidence: top.confidence,
       alert_id: top.id,
     },
-    feed_detecciones: getLiveFeedFrameMock().detections,
+    feed_detecciones: DETECTIONS.filter((d) => d.confidence >= MIN_DETECTION_CONFIDENCE).map((d) => ({
+      livestock_id: d.livestock_id,
+      livestock_tag: d.livestock_tag,
+      bbox: d.bbox,
+      behavior: d.behavior,
+    })),
   }
 }

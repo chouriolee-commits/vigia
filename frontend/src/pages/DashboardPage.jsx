@@ -21,7 +21,7 @@ export default function DashboardPage() {
   return (
     <div className="dashboard-page">
       <div className="dashboard-page__main">
-        <LiveFeedPanel />
+        <LiveFeedPanel loading={loading} error={error} />
 
         <div className="dashboard-page__kpis">
           {loading && (
