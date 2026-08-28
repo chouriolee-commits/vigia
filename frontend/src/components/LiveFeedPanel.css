@@ -171,3 +171,33 @@
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+/* Dashboard sin scroll (ver AppShell.css .app-shell--fit): en vez de que el video
+   tenga un alto fijo (16:9 sobre el ancho) y el resto de la columna se acomode
+   alrededor, el video pasa a ocupar TODO el espacio que sobra después de header
+   + botón de galería -- así la columna completa mide exactamente el alto
+   disponible. object-fit: contain en el <video> (DetectionOverlay.css) sigue
+   respetando su proporción real dentro de ese espacio (letterboxing si hace
+   falta), y el cálculo de posición de las cajas ya es genérico al tamaño real
+   del contenedor (DetectionOverlay.jsx), no asume 16:9. */
+@media (min-width: 1080px) {
+  .app-shell--fit .live-feed-panel {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .app-shell--fit .live-feed-panel__header,
+  .app-shell--fit .live-feed-panel__gallery-btn {
+    flex: none;
+  }
+
+  .app-shell--fit .live-feed-panel__frame {
+    flex: 1;
+    min-height: 180px;
+  }
+
+  .app-shell--fit .live-feed-panel__status {
+    height: 100%;
+    aspect-ratio: unset;
+  }
+}

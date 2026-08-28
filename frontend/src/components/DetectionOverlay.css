@@ -7,6 +7,18 @@
   background: #0d1f16;
 }
 
+/* Dashboard sin scroll (ver AppShell.css .app-shell--fit + LiveFeedPanel.css): el
+   contenedor padre (.live-feed-panel__frame) ya no tiene un alto fijo por 16:9,
+   sino que ocupa el espacio disponible -- este elemento debe llenarlo por
+   completo (no forzar su propia proporción) para no dejar franjas vacías. La
+   proporción real del video la sigue respetando object-fit: contain más abajo. */
+@media (min-width: 1080px) {
+  .app-shell--fit .detection-overlay {
+    aspect-ratio: unset;
+    height: 100%;
+  }
+}
+
 .detection-overlay--video {
   display: flex;
   align-items: center;

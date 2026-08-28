@@ -4,15 +4,16 @@ import { AuthProvider } from '../hooks/useAuth'
 import RequireAuth from '../components/RequireAuth'
 import AppShell from './AppShell'
 
-function renderApp() {
+function renderApp(initialEntry = '/') {
   return render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<div>LoginPage</div>} />
           <Route element={<RequireAuth />}>
             <Route element={<AppShell />}>
               <Route path="/" element={<div>Dashboard</div>} />
+              <Route path="/alertas" element={<div>Pantalla de alertas</div>} />
             </Route>
           </Route>
         </Routes>
@@ -35,5 +36,18 @@ describe('AppShell — cerrar sesión', () => {
 
     expect(screen.getByText('LoginPage')).toBeInTheDocument()
     expect(window.localStorage.getItem('vigia_auth')).toBeNull()
+  })
+})
+
+describe('AppShell — "app-shell--fit" (dashboard sin scroll)', () => {
+  it('se aplica en "/" (el dashboard, pensado para caber en una sola pantalla)', () => {
+    const { container } = renderApp('/')
+    expect(container.querySelector('.app-shell')).toHaveClass('app-shell--fit')
+  })
+
+  it('NO se aplica en otras rutas (tablas que sí deben poder scrollear con muchas filas)', () => {
+    const { container } = renderApp('/alertas')
+    expect(screen.getByText('Pantalla de alertas')).toBeInTheDocument()
+    expect(container.querySelector('.app-shell')).not.toHaveClass('app-shell--fit')
   })
 })

@@ -71,3 +71,18 @@
   font-size: 0.78rem;
   color: var(--text-faint);
 }
+
+/* Dashboard sin scroll (ver AppShell.css .app-shell--fit): el panel ocupa el resto
+   de la columna lateral (después de DetectedEventPanel, que mantiene su alto
+   natural) -- ChatMessageList.css hace la parte que realmente scrollea dentro de
+   este panel, así el panel completo nunca crece más allá del espacio disponible. */
+@media (min-width: 1080px) {
+  .app-shell--fit .ai-assistant-panel {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .app-shell--fit .ai-assistant-panel__header {
+    flex: none;
+  }
+}

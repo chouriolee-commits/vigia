@@ -62,6 +62,18 @@ export default function DetectionOverlay({ detections = [], videoSrc = null, onC
     if (!videoSrc) setVideoRect(VIDEO_RECT_COMPLETO)
   }, [videoSrc])
 
+  // En el dashboard "sin scroll" (AppShell.css .app-shell--fit) el contenedor ya no
+  // tiene una proporción fija (16:9) -- su alto depende del espacio disponible, así
+  // que SÍ puede cambiar de proporción al redimensionar la ventana, a diferencia de
+  // antes donde solo escalaba uniformemente. Sin este listener, el pillarboxing
+  // calculado en el montaje quedaría desactualizado tras un resize.
+  useEffect(() => {
+    if (!videoSrc) return undefined
+    window.addEventListener('resize', recalcularVideoRect)
+    return () => window.removeEventListener('resize', recalcularVideoRect)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoSrc])
+
   useEffect(() => {
     if (!videoSrc) return undefined
     const id = setInterval(() => {

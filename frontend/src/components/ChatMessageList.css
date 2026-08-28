@@ -7,6 +7,19 @@
   padding-right: 0.25rem;
 }
 
+/* Dashboard sin scroll (ver AppShell.css .app-shell--fit + AiAssistantPanel.css):
+   en vez de un tope fijo (320px), la lista de mensajes toma lo que sobre del
+   panel -- así el panel completo mide exactamente el alto disponible en vez de
+   quedar más corto (desperdiciando espacio) o más largo (forzando scroll de
+   página) que su columna hermana. El scroll interno se conserva igual. */
+@media (min-width: 1080px) {
+  .app-shell--fit .chat-message-list {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
 .chat-message-list__empty {
   color: var(--text-faint);
   font-size: 0.85rem;

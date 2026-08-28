@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { BellIcon, CalendarIcon, LogoutIcon, PawIcon } from '../components/icons'
 import BrandLogo from '../components/BrandLogo'
@@ -14,9 +14,14 @@ const NAV_ITEMS = [
 // disponible también como bottom-nav en mobile (fotos-diseño/mobile.jpeg).
 export default function AppShell() {
   const { user, logout } = useAuth()
+  // El dashboard ("/") está pensado para verse completo sin scroll (video + KPIs +
+  // asistente) -- las demás pantallas son tablas que sí deben poder crecer y hacer
+  // scroll normal cuando hay muchas filas. `app-shell--fit` solo se aplica en "/".
+  const { pathname } = useLocation()
+  const esDashboard = pathname === '/'
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${esDashboard ? ' app-shell--fit' : ''}`}>
       <header className="app-shell__topbar">
         <NavLink to="/" className="app-shell__brand">
           <BrandLogo size="sm" />

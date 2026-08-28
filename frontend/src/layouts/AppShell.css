@@ -126,3 +126,25 @@
     padding-bottom: 2rem;
   }
 }
+
+/* Dashboard ("/"): la pantalla completa (topbar + contenido) cabe en 100vh, sin
+   scroll de página -- el contenido interno (video, KPIs, chat) se reparte el
+   espacio restante con flexbox/grid en vez de crecer libremente. Solo desde
+   1080px: por debajo de eso DashboardPage.css apila las columnas en vez de
+   ponerlas lado a lado (ver ese archivo), y ahí sí debe poder scrollear normal
+   -- forzar overflow:hidden en una columna apilada recortaría contenido en vez
+   de "hacerlo caber". */
+@media (min-width: 1080px) {
+  .app-shell--fit {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .app-shell--fit .app-shell__content {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1.25rem;
+  }
+}

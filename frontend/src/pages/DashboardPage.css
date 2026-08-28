@@ -15,6 +15,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.9rem;
+  flex: none;
 }
 
 .dashboard-page__status {
@@ -44,6 +45,29 @@
 @media (min-width: 1080px) {
   .dashboard-page {
     grid-template-columns: 2fr 1fr;
-    align-items: start;
+  }
+}
+
+/* Ambas columnas deben caber en una sola pantalla sin scroll (ver AppShell.css,
+   .app-shell--fit): en vez de que cada columna crezca a su alto natural
+   (align-items: start), se estiran a la misma altura -- lo que sobra o falta lo
+   absorbe el panel de video (LiveFeedPanel.css) y el chat (AiAssistantPanel.css),
+   cada uno con su propia parte flexible y min-height: 0. Solo aplica en el
+   dashboard real (con datos cargados); los estados de carga/error son cortos y no
+   necesitan esto. */
+@media (min-width: 1080px) {
+  /* .app-shell__content ya es flex-column (ver AppShell.css) -- flex: 1 es lo que
+     hace que .dashboard-page tome el alto restante bajo el topbar en vez de su
+     alto natural (height: 100% no alcanza: el eje principal de un flex-column
+     se controla con flex-grow, no con porcentajes). */
+  .app-shell--fit .dashboard-page {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .app-shell--fit .dashboard-page__main,
+  .app-shell--fit .dashboard-page__side {
+    height: 100%;
+    min-height: 0;
   }
 }
