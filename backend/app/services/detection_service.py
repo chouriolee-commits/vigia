@@ -73,6 +73,24 @@ def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> Non
     """
     if payload.behavior == "anomalo":
         titulo = payload.motivo or "Comportamiento anómalo detectado"
+        descripcion = payload.motivo or f"Detección {detection.id}: confianza {detection.confidence}"
+
+        # Sin re-identificación real, un mismo escaneo genera muchas detecciones "anomalo"
+        # seguidas del MISMO animal (una por cada frame muestreado) — sin esto, cada una
+        # crea una alerta nueva y la pantalla de alertas termina con decenas de filas
+        # idénticas por el mismo animal. En vez de duplicar, si ya hay una alerta ABIERTA
+        # de este tipo para este animal se actualiza esa misma fila con el motivo/detección
+        # más reciente (ej. la temperatura de la fiebre cambió entre frames) en vez de
+        # crear una nueva. Detecciones sin livestock_id no se deduplican entre sí: cada
+        # una podría ser un animal distinto.
+        if detection.livestock_id is not None:
+            existente = alert_repository.get_open_for_livestock(db, detection.livestock_id, "comportamiento_anomalo")
+            if existente is not None:
+                existente.title = titulo
+                existente.description = descripcion
+                existente.detection_id = detection.id
+                return
+
         alert_repository.create(
             db,
             detection_id=detection.id,
@@ -82,5 +100,5 @@ def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> Non
             priority="alta",
             status="activa",
             title=titulo,
-            description=payload.motivo or f"Detección {detection.id}: confianza {detection.confidence}",
+            description=descripcion,
         )

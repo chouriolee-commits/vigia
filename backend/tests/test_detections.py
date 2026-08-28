@@ -55,6 +55,36 @@ def test_deteccion_anomala_con_motivo_usa_titulo_especifico(client, seed_media):
     assert alertas[0]["title"] == "Sospecha de fiebre (40.6°C)"
 
 
+def test_dos_detecciones_anomalas_seguidas_del_mismo_animal_no_duplican_la_alerta(client, seed_media):
+    """Un escaneo genera muchas detecciones 'anomalo' seguidas del MISMO animal (una por
+    frame) -- no debe verse una alerta repetida por cada una, solo una."""
+    payload = {**DETECTION_PAYLOAD, "livestock_id": seed_media["livestock_id"], "behavior": "anomalo", "motivo": "Sospecha de fiebre (39.0°C)"}
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=payload)
+    payload2 = {**payload, "motivo": "Sospecha de fiebre (40.6°C)"}
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=payload2)
+
+    alertas = client.get("/api/alertas").json()
+    assert len(alertas) == 1
+    # La alerta que queda refleja el motivo de la detección MÁS RECIENTE, no la primera.
+    assert alertas[0]["title"] == "Sospecha de fiebre (40.6°C)"
+
+
+def test_detecciones_anomalas_de_animales_distintos_generan_alertas_separadas(client, db, seed_media):
+    from app.models.livestock import Livestock
+
+    otro_animal = Livestock(tag_code="VG-999", species="bovino", potrero_id=seed_media["potrero_id"])
+    db.add(otro_animal)
+    db.commit()
+
+    payload_a = {**DETECTION_PAYLOAD, "livestock_id": seed_media["livestock_id"], "behavior": "anomalo"}
+    payload_b = {**DETECTION_PAYLOAD, "livestock_id": otro_animal.id, "behavior": "anomalo"}
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=payload_a)
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=payload_b)
+
+    alertas = client.get("/api/alertas").json()
+    assert len(alertas) == 2
+
+
 def test_deteccion_media_inexistente_devuelve_404(client):
     response = client.post("/api/media/9999/detecciones", json=DETECTION_PAYLOAD)
     assert response.status_code == 404

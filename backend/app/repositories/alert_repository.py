@@ -15,6 +15,21 @@ def create(db: Session, **fields) -> Alert:
     return alert
 
 
+def get_open_for_livestock(db: Session, livestock_id: int, type: str) -> Alert | None:
+    """¿Ya hay una alerta ABIERTA (activa/en_revision) de este tipo para este animal?
+    Se usa para no duplicar alertas del mismo tipo por el mismo animal (ver
+    detection_service._crear_alerta_si_aplica)."""
+    return (
+        db.query(Alert)
+        .filter(
+            Alert.livestock_id == livestock_id,
+            Alert.type == type,
+            Alert.status.in_(["activa", "en_revision"]),
+        )
+        .first()
+    )
+
+
 def list_by_status(db: Session, statuses: list[str]) -> list[Alert]:
     alerts = db.query(Alert).filter(Alert.status.in_(statuses)).all()
     # Prioridad desc, luego fecha desc (RF3 de 006-alert-system)
