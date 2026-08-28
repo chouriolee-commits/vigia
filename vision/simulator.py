@@ -81,15 +81,18 @@ def main():
     engine = mock_detector if args.mock else detector
     session = requests.Session()
 
-    # --- Crear misión ---
-    resp = session.post(
-        f"{args.backend_url}/api/misiones",
-        json={"potrero_id": args.potrero_id, "drone_identifier": args.drone_id},
-        timeout=10,
-    )
-    resp.raise_for_status()
-    mission_id = resp.json()["id"]
-    print(f"[INFO] Misión creada: id={mission_id} | potrero={args.potrero_id} | motor={'mock' if args.mock else 'yolov8'}")
+    def crear_mision():
+        resp = session.post(
+            f"{args.backend_url}/api/misiones",
+            json={"potrero_id": args.potrero_id, "drone_identifier": args.drone_id},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        nuevo_id = resp.json()["id"]
+        print(f"[INFO] Misión creada: id={nuevo_id} | potrero={args.potrero_id} | motor={'mock' if args.mock else 'yolov8'}")
+        return nuevo_id
+
+    mission_id = crear_mision()
 
     # --- Inventario real del potrero (para "reconocer" animales, ver docstring) ---
     # Nota: el contrato de /reconciliacion expone el campo como "livestock_tag"
@@ -130,9 +133,16 @@ def main():
             exito, frame = captura.read()
             if not exito:
                 if args.loop:
-                    print("[INFO] Fin del video — reiniciando (--loop activo)")
+                    _imprimir_resumen(resumen)  # cierre de esta vuelta antes de reiniciar
+                    print("[INFO] Fin del video — nueva vuelta (--loop activo)")
                     captura.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     numero_frame = 0
+                    # Misión nueva por vuelta: el conteo del dashboard (acotado a la
+                    # misión más reciente) vuelve a 0 en cada loop, no solo al cambiar
+                    # de video — sumar para siempre mientras el mismo video da vueltas
+                    # no representa nada real (regresión reportada: llegó a 242).
+                    mission_id = crear_mision()
+                    resumen = _resumen_vacio()
                     continue
                 print("[INFO] Video terminado")
                 break
