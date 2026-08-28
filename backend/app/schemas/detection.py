@@ -25,6 +25,11 @@ class DetectionIn(BaseModel):
     behavior: Behavior = "desconocido"
     detected_at: datetime
     model_version: str
+    # Opcional: motivo específico cuando behavior="anomalo" (ej. "Sospecha de fiebre
+    # (40.6°C)"). Si no viene, la alerta usa un título genérico. Pensado para que
+    # una fuente que sí simule/mida salud (sensores, o el simulador de demo) pueda
+    # dar contexto más rico sin que el backend invente nada por su cuenta.
+    motivo: str | None = None
 
 
 class DetectionOut(DetectionIn):
