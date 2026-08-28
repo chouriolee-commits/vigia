@@ -54,7 +54,6 @@ export default function DetectionOverlay({ detections = [], videoSrc = null, onC
             className="detection-overlay__video"
             src={videoSrc}
             autoPlay
-            loop
             muted={muted}
             playsInline
             aria-hidden="true"
