@@ -21,6 +21,18 @@
   gap: 0.75rem;
 }
 
+.live-feed-panel__video-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.live-feed-panel__scanning {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
 .live-feed-panel__video-select select {
   background: var(--surface-2);
   color: var(--text);

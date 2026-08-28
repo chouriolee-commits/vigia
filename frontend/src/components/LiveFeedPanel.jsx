@@ -3,6 +3,7 @@ import DetectionOverlay from './DetectionOverlay'
 import CapturedImagesModal from './CapturedImagesModal'
 import { CameraIcon } from './icons'
 import { formatTime } from '../utils/format'
+import { startSimulation } from '../services/simulationService'
 import './LiveFeedPanel.css'
 
 const MAX_CAPTURES = 12
@@ -10,13 +11,14 @@ const CAPTURE_INTERVAL_MS = 12000
 const MAX_BOXES = 5
 
 // Videos ya disponibles en frontend/public/video — cambiar acá no requiere pisar
-// archivos por terminal. El simulador (vision/simulator.py) que alimenta las
-// detecciones reales sigue apuntando al video que se le pase por --video aparte;
-// este selector solo cambia cuál se reproduce/superpone en el panel.
+// archivos por terminal. Cada opción está mapeada a UN potrero: al elegir un
+// video, se le pide al backend (POST /api/simulacion) que arranque un escaneo
+// real de vision/simulator.py contra ESE video/potrero — el panel deja de ser
+// solo cosmético, el conteo del dashboard sí cambia con la selección.
 const VIDEO_OPTIONS = [
-  { key: 'corral-vertical', label: 'Corral (vertical)', src: '/video/corral-vertical.mp4' },
-  { key: 'pastizal-suelo', label: 'Pastizal (suelo)', src: '/video/pastizal-suelo.mp4' },
-  { key: 'pastizal-aereo', label: 'Pastizal (aéreo)', src: '/video/pastizal-aereo.mp4' },
+  { key: 'corral-vertical', label: 'Corral (vertical)', file: 'corral-vertical.mp4', potreroId: 1 },
+  { key: 'pastizal-suelo', label: 'Pastizal (suelo)', file: 'pastizal-suelo.mp4', potreroId: 2 },
+  { key: 'pastizal-aereo', label: 'Pastizal (aéreo)', file: 'pastizal-aereo.mp4', potreroId: 3 },
 ]
 const VIDEO_STORAGE_KEY = 'vigia_video_seleccionado'
 
@@ -49,6 +51,24 @@ export default function LiveFeedPanel({ detections, loading, error }) {
     return () => clearInterval(id)
   }, [])
 
+  const [escaneando, setEscaneando] = useState(false)
+
+  function iniciarEscaneo(opcion) {
+    setEscaneando(true)
+    startSimulation(opcion.potreroId, opcion.file)
+      .catch(() => {
+        // No bloquea la vista previa del video si el backend no está disponible
+        // (ej. modo mock, o backend caído) — solo se pierde el escaneo real.
+      })
+      .finally(() => setEscaneando(false))
+  }
+
+  // Arranca el escaneo de la opción por defecto al montar (no solo al cambiar).
+  useEffect(() => {
+    iniciarEscaneo(VIDEO_OPTIONS.find((v) => v.key === videoKey) ?? VIDEO_OPTIONS[0])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function handleVideoChange(event) {
     const key = event.target.value
     setVideoKey(key)
@@ -58,9 +78,12 @@ export default function LiveFeedPanel({ detections, loading, error }) {
       // localStorage no disponible (ej. navegación privada) — la selección solo
       // dura la sesión actual de la pestaña, degradación aceptada.
     }
+    const opcion = VIDEO_OPTIONS.find((v) => v.key === key)
+    if (opcion) iniciarEscaneo(opcion)
   }
 
-  const videoSrc = (VIDEO_OPTIONS.find((v) => v.key === videoKey) ?? VIDEO_OPTIONS[0]).src
+  const videoOpcionActual = VIDEO_OPTIONS.find((v) => v.key === videoKey) ?? VIDEO_OPTIONS[0]
+  const videoSrc = `/video/${videoOpcionActual.file}`
 
   const handleCapture = useCallback((dataUrl) => {
     nextIdRef.current += 1
@@ -72,16 +95,19 @@ export default function LiveFeedPanel({ detections, loading, error }) {
     <section className="live-feed-panel">
       <div className="live-feed-panel__header">
         <h2 className="live-feed-panel__heading">Monitoreo actual</h2>
-        <label className="live-feed-panel__video-select">
-          <span className="sr-only">Video de la fuente</span>
-          <select value={videoKey} onChange={handleVideoChange}>
-            {VIDEO_OPTIONS.map((opt) => (
-              <option key={opt.key} value={opt.key}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="live-feed-panel__video-controls">
+          {escaneando && <span className="live-feed-panel__scanning">Iniciando escaneo…</span>}
+          <label className="live-feed-panel__video-select">
+            <span className="sr-only">Video de la fuente</span>
+            <select value={videoKey} onChange={handleVideoChange}>
+              {VIDEO_OPTIONS.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className="live-feed-panel__frame">

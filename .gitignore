@@ -22,6 +22,9 @@ coverage/
 # Pesos de modelos — ultralytics los descarga solo si faltan, no versionar binarios
 *.pt
 
+# Logs del subproceso del simulador (app/services/simulation_service.py)
+*.log
+
 # Editor/OS
 .DS_Store
 *.swp
