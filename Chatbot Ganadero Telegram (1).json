@@ -1,0 +1,288 @@
+{
+  "name": "Chatbot Ganadero Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ganado/alerta",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e50ecdd4-5715-4cab-8c48-ee67c623fffc",
+      "name": "Webhook Alerta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "webhookId": "c9a22e9f-c140-4e6a-8070-4a6e2f3155c4",
+      "notes": "POST /ganado/alerta — recibe una alerta desde el software externo."
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3LW5pveanynxfE4w",
+          "cachedResultName": "alertas_ganado"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nivel": "={{ $json.body.nivel }}",
+            "titulo": "={{ $json.body.titulo }}",
+            "mensaje": "={{ $json.body.mensaje }}",
+            "origen": "={{ $json.body.origen }}",
+            "creado_en": "={{ $now.toISO() }}"
+          },
+          "schema": [
+            {
+              "id": "nivel",
+              "displayName": "nivel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "titulo",
+              "displayName": "titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "mensaje",
+              "displayName": "mensaje",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "origen",
+              "displayName": "origen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "creado_en",
+              "displayName": "creado_en",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b5d98a93-0a78-4475-a29a-7aa6549aa360",
+      "name": "Guardar Alerta",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        448
+      ],
+      "notes": "Inserta la nueva alerta con su fecha de creación."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $vars.TELEGRAM_ALERT_CHAT_ID }}",
+        "text": "=ALERTA [{{ ($(\"Webhook Alerta\").item.json.body.nivel || \"\").toUpperCase() }}]\n\n{{ $(\"Webhook Alerta\").item.json.body.titulo }}\n{{ $(\"Webhook Alerta\").item.json.body.mensaje }}\n\nOrigen: {{ $(\"Webhook Alerta\").item.json.body.origen }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5997a322-d500-45c1-95a3-34e04001b179",
+      "name": "Enviar Alerta Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        448
+      ],
+      "webhookId": "16ac2974-371e-4aca-b827-ad170e903d4d",
+      "credentials": {
+        "telegramApi": {
+          "id": "jrJ0ZATKSdzM2arg",
+          "name": "Telegram account"
+        }
+      },
+      "notes": "Envía la alerta al chat/grupo definido en la variable TELEGRAM_ALERT_CHAT_ID."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, mensaje: \"Alerta guardada y enviada correctamente\" }) }}",
+        "options": {}
+      },
+      "id": "fcdefa8e-74ee-4451-b249-8069865337c1",
+      "name": "Responder Alerta OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        448
+      ],
+      "notes": "Devuelve JSON confirmando que la alerta fue guardada y enviada."
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3LW5pveanynxfE4w",
+          "cachedResultName": "alertas_ganado"
+        },
+        "returnAll": true,
+        "orderBy": true,
+        "orderByColumn": "creado_en"
+      },
+      "id": "16bc0a4c-6ffd-4be4-b8f3-6f4e4833843d",
+      "name": "Listar Alertas Para Depurar",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        448
+      ],
+      "notes": "Lee todas las alertas ordenadas para conservar solo las 50 más recientes."
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json).filter(r => r && r.id != null);\nconst excess = rows.slice(50);\nreturn excess.map(r => ({ json: { id: r.id } }));"
+      },
+      "id": "3c261bf3-337f-47cd-8130-ba75a6c2b0e2",
+      "name": "Calcular Alertas Sobrantes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        448
+      ],
+      "notes": "Devuelve los IDs de las alertas que exceden las 50 más recientes."
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "3LW5pveanynxfE4w",
+          "cachedResultName": "alertas_ganado"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "995c96cd-6f39-469b-93d6-e4349b4ca48b",
+      "name": "Eliminar Alertas Antiguas",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        448
+      ],
+      "notes": "Elimina las alertas que exceden las 50 más recientes."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Alerta": {
+      "main": [
+        [
+          {
+            "node": "Guardar Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Alerta": {
+      "main": [
+        [
+          {
+            "node": "Enviar Alerta Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Alerta Telegram": {
+      "main": [
+        [
+          {
+            "node": "Responder Alerta OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Alerta OK": {
+      "main": [
+        [
+          {
+            "node": "Listar Alertas Para Depurar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Alertas Para Depurar": {
+      "main": [
+        [
+          {
+            "node": "Calcular Alertas Sobrantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Alertas Sobrantes": {
+      "main": [
+        [
+          {
+            "node": "Eliminar Alertas Antiguas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0c5c32bd-2aeb-4917-a5af-73f02e134e9c",
+  "meta": {
+    "instanceId": "3a652501e4dc8680160d4d91c7c352ac304cdb6aa1ed505d20929bceb231f417"
+  },
+  "nodeGroups": [],
+  "id": "nZC4IR8PJTdPlWbU",
+  "tags": []
+}
