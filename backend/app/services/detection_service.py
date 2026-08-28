@@ -62,7 +62,15 @@ def ingest_detection(db: Session, media_id: int, payload: DetectionIn) -> Detect
 
 
 def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> None:
-    """Comportamiento anómalo o animal no identificado generan alerta (006-alert-system)."""
+    """
+    Comportamiento anómalo genera alerta (006-alert-system).
+
+    Nota: NO se genera alerta `animal_desconocido` por cada detección sin
+    livestock_id todavía — hoy el sistema no tiene re-identificación individual
+    real, así que TODA detección viene sin livestock_id, y alertar por eso
+    inundaría la pantalla de alertas con una entrada por cada animal en cada
+    frame sin aportar información útil. Se retoma cuando haya re-identificación.
+    """
     if payload.behavior == "anomalo":
         alert_repository.create(
             db,
@@ -74,16 +82,4 @@ def _crear_alerta_si_aplica(db: Session, detection, payload: DetectionIn) -> Non
             status="activa",
             title="Comportamiento anómalo detectado",
             description=f"Detección {detection.id}: confianza {detection.confidence}",
-        )
-    elif detection.livestock_id is None:
-        alert_repository.create(
-            db,
-            detection_id=detection.id,
-            livestock_id=None,
-            potrero_id=detection.potrero_id,
-            type="animal_desconocido",
-            priority="media",
-            status="activa",
-            title="Animal no identificado en el rebaño",
-            description=f"Detección {detection.id}: sin coincidencia con livestock registrado",
         )
