@@ -1,0 +1,18 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic[email]==2.10.4
+pydantic-settings==2.7.1
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
+
+# Autenticación (013-authentication)
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1  # pin necesario: passlib 1.7.4 es incompatible con bcrypt>=4.1 (falta __about__)
+pyjwt==2.10.1
+
+# Testing
+pytest==8.3.4
+httpx==0.28.1
