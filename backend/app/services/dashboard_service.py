@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from app.repositories import alert_repository, detection_repository
+from app.repositories import alert_repository, detection_repository, mission_repository
 from app.schemas.dashboard import (
     AnimalesMonitoreados,
     DashboardAlerta,
@@ -17,10 +17,17 @@ _ESTADOS_ABIERTOS = ["activa", "en_revision"]
 
 
 def get_dashboard_summary(db: Session) -> DashboardOut:
-    # Suma acumulada de detecciones reales (no un conteo limitado al inventario
-    # registrado, ni una foto de un solo frame): cada detección que pasó el umbral
-    # de confianza cuenta, y el total crece con cada una que procesa el pipeline.
-    total_animales = detection_repository.count_all(db)
+    # Escaneo por SESIÓN (misión), no un acumulado histórico de siempre: cada vez
+    # que arranca una misión nueva (otro video/potrero desde vision/simulator.py),
+    # el conteo vuelve a 0 y empieza a sumar de nuevo — lo de antes no se borra,
+    # sigue disponible por potrero via /api/potreros/{id}/reconciliacion.
+    mision_activa = mission_repository.get_latest(db)
+    if mision_activa is None:
+        total_animales = 0
+        detecciones_recientes = []
+    else:
+        total_animales = detection_repository.count_by_mission(db, mision_activa.id)
+        detecciones_recientes = detection_repository.list_recent_by_mission(db, mision_activa.id)
 
     alertas_orm = alert_repository.list_by_status(db, _ESTADOS_ABIERTOS)
     alertas_activas = [
@@ -65,7 +72,7 @@ def get_dashboard_summary(db: Session) -> DashboardOut:
             },
             behavior=d.behavior or "desconocido",
         )
-        for d in detection_repository.list_recent(db)
+        for d in detecciones_recientes
     ]
 
     return DashboardOut(

@@ -26,10 +26,11 @@ def test_dashboard_vacio_sin_datos(client):
     assert body["feed_detecciones"] == []
 
 
-def test_dashboard_suma_todas_las_detecciones_reales(client, db, seed_media):
-    """animales_monitoreados es la SUMA acumulada de detecciones reales (cada una ya
-    pasó el umbral de confianza), no una foto de un solo frame ni un tope contra el
-    inventario registrado — sigue sumando aunque vengan de frames/animales distintos."""
+def test_dashboard_suma_detecciones_de_la_mision_activa(client, db, seed_media):
+    """animales_monitoreados suma las detecciones reales de la misión (sesión de
+    escaneo) más reciente, no una foto de un solo frame ni un tope contra el
+    inventario registrado — sigue sumando aunque vengan de frames/animales distintos,
+    mientras sea la misma misión."""
     _crear_deteccion(db, seed_media, livestock_id=seed_media["livestock_id"])
     _crear_deteccion(db, seed_media, livestock_id=None)  # animal sin identificar, cuenta igual
     _crear_deteccion(db, seed_media, livestock_id=None)
@@ -39,8 +40,9 @@ def test_dashboard_suma_todas_las_detecciones_reales(client, db, seed_media):
     assert body["animales_monitoreados"]["total"] == 3
 
 
-def test_dashboard_suma_detecciones_de_distintos_frames(client, db, seed_media):
-    """Detecciones de frames/momentos distintos se suman todas, no solo el último frame."""
+def test_dashboard_suma_detecciones_de_distintos_frames_misma_mision(client, db, seed_media):
+    """Detecciones de frames/momentos distintos se suman todas, no solo el último
+    frame — siempre que sigan siendo parte de la misma misión."""
     hace_rato = datetime.now(timezone.utc) - timedelta(minutes=30)
     for _ in range(5):
         _crear_deteccion(db, seed_media, media_id=seed_media["media_id"], detected_at=hace_rato)
@@ -58,6 +60,36 @@ def test_dashboard_suma_detecciones_de_distintos_frames(client, db, seed_media):
 
     body = client.get("/api/dashboard").json()
     assert body["animales_monitoreados"]["total"] == 7
+
+
+def test_dashboard_resetea_a_cero_al_iniciar_mision_nueva(client, db, seed_media):
+    """Regresión: cambiar de video/potrero (= arrancar una misión nueva) debe volver
+    el conteo a 0, sin borrar lo detectado en la misión anterior (sigue disponible
+    por potrero vía /api/potreros/{id}/reconciliacion)."""
+    from app.models.drone_mission import DroneMission
+    from app.models.media import Media
+
+    _crear_deteccion(db, seed_media, livestock_id=seed_media["livestock_id"])
+    _crear_deteccion(db, seed_media, livestock_id=None)
+    db.commit()
+    assert client.get("/api/dashboard").json()["animales_monitoreados"]["total"] == 2
+
+    mision_nueva = DroneMission(
+        potrero_id=seed_media["potrero_id"], drone_identifier="DRONE-02",
+        started_at=datetime.now(timezone.utc), status="en_progreso",
+    )
+    db.add(mision_nueva)
+    db.flush()
+    media_nueva = Media(
+        mission_id=mision_nueva.id, type="imagen", url="file:///nueva.jpg",
+        captured_at=datetime.now(timezone.utc),
+    )
+    db.add(media_nueva)
+    db.commit()
+
+    body = client.get("/api/dashboard").json()
+    assert body["animales_monitoreados"]["total"] == 0
+    assert body["feed_detecciones"] == []
 
 
 def test_dashboard_agrega_alerta_top(client, db, seed_media):

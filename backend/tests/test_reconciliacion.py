@@ -1,3 +1,12 @@
+def test_listar_potreros_vacio(client):
+    assert client.get("/api/potreros").json() == []
+
+
+def test_listar_potreros_incluye_los_creados(client, seed_media):
+    body = client.get("/api/potreros").json()
+    assert body == [{"id": seed_media["potrero_id"], "name": "Potrero Norte"}]
+
+
 def test_reconciliacion_potrero_inexistente_404(client):
     response = client.get("/api/potreros/9999/reconciliacion")
     assert response.status_code == 404

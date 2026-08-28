@@ -1,13 +1,13 @@
+import { useState } from 'react'
 import { useLivestockReconciliation } from '../hooks/useLivestockReconciliation'
+import { usePotreros } from '../hooks/usePotreros'
 import BackButton from '../components/BackButton'
 import LivestockTable from '../components/LivestockTable'
 import StatusBadge, { RECONCILIATION_TONE } from '../components/StatusBadge'
 import { formatDateTime, formatConfidence, BEHAVIOR_LABEL } from '../utils/format'
 import './LivestockMonitoringPage.css'
 
-// RF2 [Fase futura] — selector de potrero. El MVP usa un único potrero fijo del seed/mock
-// (specs/003-livestock-monitoring/requirements.md).
-const POTRERO_ID = 1
+const POTRERO_ID_DEFAULT = 1
 
 const REAL_COLUMNS = [
   {
@@ -59,13 +59,29 @@ const EXPECTED_COLUMNS = [
 ]
 
 export default function LivestockMonitoringPage() {
-  const { data, loading, error } = useLivestockReconciliation(POTRERO_ID)
+  const { potreros } = usePotreros()
+  const [potreroId, setPotreroId] = useState(POTRERO_ID_DEFAULT)
+  const { data, loading, error } = useLivestockReconciliation(potreroId)
 
   return (
     <div className="livestock-page">
       <header className="livestock-page__header">
         <h1>{data?.potrero?.name ?? 'Animales monitoreados'}</h1>
-        <BackButton />
+        <div className="livestock-page__header-actions">
+          {potreros.length > 1 && (
+            <label className="livestock-page__potrero-select">
+              <span className="sr-only">Potrero a mostrar</span>
+              <select value={potreroId} onChange={(e) => setPotreroId(Number(e.target.value))}>
+                {potreros.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <BackButton />
+        </div>
       </header>
 
       {loading && <p className="livestock-page__status">Cargando reconciliación de animales…</p>}

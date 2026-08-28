@@ -14,6 +14,40 @@
   color: var(--text);
 }
 
+.livestock-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.livestock-page__potrero-select select {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.livestock-page__potrero-select select:hover,
+.livestock-page__potrero-select select:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .livestock-page__status {
   color: var(--text-dim);
   padding: 1.5rem 0;

@@ -1,5 +1,10 @@
 import { DETECTIONS, LIVESTOCK, POTRERO } from './seed'
 
+// GET /api/potreros — en el MVP solo hay un potrero sembrado en el mock
+export function getPotrerosMock() {
+  return [{ id: POTRERO.id, name: POTRERO.name }]
+}
+
 // Contrato: specs/003-livestock-monitoring/design.md — GET /api/potreros/{id}/reconciliacion
 export function getReconciliationMock(potreroId = POTRERO.id) {
   const potrero = potreroId === POTRERO.id ? POTRERO : { id: potreroId, name: `Potrero ${potreroId}` }
