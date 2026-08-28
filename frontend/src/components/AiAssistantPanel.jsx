@@ -46,7 +46,10 @@ export default function AiAssistantPanel({ data }) {
           <BotIcon width={20} height={20} />
         </span>
         <div>
-          <h2 className="ai-assistant-panel__title">VIGÍA AI</h2>
+          <h2 className="ai-assistant-panel__title">
+            VIGÍA AI
+            <span className="ai-assistant-panel__status" aria-hidden="true" />
+          </h2>
           <p className="ai-assistant-panel__subtitle">Asistente inteligente de monitoreo</p>
         </div>
       </header>

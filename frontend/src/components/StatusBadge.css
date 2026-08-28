@@ -8,6 +8,7 @@
   letter-spacing: 0.02em;
   padding: 0.22rem 0.6rem;
   border-radius: var(--radius-pill);
+  border: 1px solid transparent;
   white-space: nowrap;
   line-height: 1.5;
 }
@@ -22,22 +23,27 @@
 
 .status-badge--accent {
   background: var(--accent-soft);
+  border-color: var(--accent-border);
   color: var(--accent);
 }
 .status-badge--accent::before {
   background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
 }
 
 .status-badge--danger {
   background: var(--danger-soft);
+  border-color: var(--danger-border);
   color: var(--danger);
 }
 .status-badge--danger::before {
   background: var(--danger);
+  box-shadow: 0 0 6px var(--danger);
 }
 
 .status-badge--warning {
   background: var(--warning-soft);
+  border-color: var(--warning-border);
   color: var(--warning);
 }
 .status-badge--warning::before {
@@ -46,6 +52,7 @@
 
 .status-badge--info {
   background: var(--info-soft);
+  border-color: var(--info-border);
   color: var(--info);
 }
 .status-badge--info::before {
@@ -53,7 +60,8 @@
 }
 
 .status-badge--neutral {
-  background: var(--surface-2);
+  background: var(--surface-3);
+  border-color: var(--border);
   color: var(--text-dim);
 }
 .status-badge--neutral::before {

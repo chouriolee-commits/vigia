@@ -1,11 +1,15 @@
 .ai-assistant-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background:
+    radial-gradient(140% 100% at 0% 0%, rgba(34, 201, 147, 0.06), transparent 55%),
+    var(--surface-2);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius);
   padding: 1.1rem 1.2rem;
+  box-shadow: var(--shadow-sm), 0 0 32px rgba(34, 201, 147, 0.05);
 }
 
 .ai-assistant-panel__header {
@@ -17,19 +21,49 @@
 .ai-assistant-panel__icon {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: var(--accent-glow);
   flex: none;
 }
 
 .ai-assistant-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
   color: var(--text);
+}
+
+/* pequeño indicador de "sistema activo" — mismo lenguaje visual que el badge VIVO del feed */
+.ai-assistant-panel__status {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  animation: ai-assistant-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes ai-assistant-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-assistant-panel__status {
+    animation: none;
+  }
 }
 
 .ai-assistant-panel__subtitle {

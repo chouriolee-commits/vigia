@@ -41,6 +41,7 @@ export default function DashboardPage() {
                 label="Animales Monitoreados"
                 value={data.animales_monitoreados.total}
                 sublabel="Actualizado ahora"
+                tone="accent"
                 onClick={() => navigate('/animales')}
               />
               <KpiCard
@@ -48,6 +49,7 @@ export default function DashboardPage() {
                 label="Alertas Activas"
                 value={alertasCount}
                 sublabel={alertasCount > 0 ? `${highPriorityCount} prioridad alta` : undefined}
+                tone="warning"
                 onClick={() => navigate('/alertas')}
               />
               <KpiCard
@@ -55,6 +57,7 @@ export default function DashboardPage() {
                 label="Eventos Hoy"
                 value={data.eventos_hoy.total}
                 sublabel="Total"
+                tone="info"
                 onClick={() => navigate('/eventos')}
               />
             </>

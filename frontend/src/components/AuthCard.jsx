@@ -21,7 +21,7 @@ export default function AuthCard() {
 
       <div className="auth-card__header">
         <BrandLogo size="lg" />
-        <span className="auth-card__tagline">Vigilancia Inteligente para la Ganadería: Identificación de Anomalías</span>
+        <span className="auth-card__tagline">VIGILANCIA INTELIGENTE PARA LA GANADERÍA: IDENTIFICACIÓN DE ANOMALÍAS</span>
       </div>
 
       {mode === 'login' ? <LoginForm /> : <RegisterForm />}

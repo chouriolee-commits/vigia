@@ -1,4 +1,4 @@
-import { ALERT_TYPE_LABEL, BEHAVIOR_LABEL, formatConfidence, PRIORITY_LABEL } from '../../utils/format'
+import { ALERT_TYPE_LABEL, BEHAVIOR_LABEL, PRIORITY_LABEL } from '../../utils/format'
 
 // Heurística de respuesta — specs/007-ai-assistant/design.md.
 // Regla no negociable: responde SIEMPRE a partir de `context` (alertas/detecciones reales
@@ -21,7 +21,7 @@ export function getAssistantReplyMock(message, context = {}) {
     if (alert) {
       return {
         role: 'assistant',
-        content: `${tag}: ${alert.description}${alert.confidence != null ? ` (confidence ${formatConfidence(alert.confidence)})` : ''}. Prioridad ${PRIORITY_LABEL[alert.priority]?.toLowerCase()}.`,
+        content: `${tag}: ${alert.description} Prioridad ${PRIORITY_LABEL[alert.priority]?.toLowerCase()}.`,
         suggested_action: { label: 'Ver análisis', route: '/alertas' },
       }
     }
@@ -29,7 +29,7 @@ export function getAssistantReplyMock(message, context = {}) {
     if (detection) {
       return {
         role: 'assistant',
-        content: `${tag} fue detectado con comportamiento "${BEHAVIOR_LABEL[detection.behavior] ?? detection.behavior}" (confidence ${formatConfidence(detection.confidence)}). No tiene alertas activas.`,
+        content: `${tag} fue detectado con comportamiento "${BEHAVIOR_LABEL[detection.behavior] ?? detection.behavior}". No tiene alertas activas.`,
         suggested_action: { label: 'Ver animales monitoreados', route: '/animales' },
       }
     }

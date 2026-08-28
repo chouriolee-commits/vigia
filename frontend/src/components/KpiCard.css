@@ -1,31 +1,68 @@
 .kpi-card {
+  --kpi-tone: var(--accent);
+  --kpi-tone-soft: var(--accent-soft);
+  --kpi-tone-border: var(--accent-border);
+
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 0.9rem;
-  background: var(--surface);
+  background: var(--surface-2);
+  background-image: var(--surface-sheen);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.1rem 1.2rem;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.1s ease;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: border-color 0.2s ease-out, transform 0.15s ease-out, box-shadow 0.2s ease-out;
+}
+
+/* filo de color sutil arriba — identifica la tarjeta sin pintarla entera */
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: var(--kpi-tone);
+  opacity: 0.7;
 }
 
 .kpi-card:hover {
-  border-color: var(--accent);
+  border-color: var(--kpi-tone-border);
+  box-shadow: var(--shadow-sm), 0 0 0 1px var(--kpi-tone-border);
 }
 
 .kpi-card:active {
   transform: translateY(1px);
 }
 
+.kpi-card--accent {
+  --kpi-tone: var(--accent);
+  --kpi-tone-soft: var(--accent-soft);
+  --kpi-tone-border: var(--accent-border);
+}
+
+.kpi-card--warning {
+  --kpi-tone: var(--warning);
+  --kpi-tone-soft: var(--warning-soft);
+  --kpi-tone-border: var(--warning-border);
+}
+
+.kpi-card--info {
+  --kpi-tone: var(--info);
+  --kpi-tone-soft: var(--info-soft);
+  --kpi-tone-border: var(--info-border);
+}
+
 .kpi-card__icon {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  color: var(--accent);
+  background: var(--kpi-tone-soft);
+  color: var(--kpi-tone);
   flex: none;
 }
 
@@ -47,7 +84,7 @@
 .kpi-card__value {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
-  font-size: 1.7rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--text);
   line-height: 1.15;

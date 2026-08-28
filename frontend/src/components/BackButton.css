@@ -2,7 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text-dim);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -10,10 +10,11 @@
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .back-button:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 1px var(--accent-border);
 }

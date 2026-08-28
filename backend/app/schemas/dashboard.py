@@ -27,8 +27,10 @@ class EventosHoy(BaseModel):
 
 
 class EventoDetectado(BaseModel):
-    animal_id: int | None
-    animal_tag: str | None
+    # livestock_id/livestock_tag: nombres fijados en 005-yolov8-detection ("Nota de
+    # consistencia") y usados igual en 002/003/006/012 — no reintroducir animal_id/animal_tag.
+    livestock_id: int | None
+    livestock_tag: str | None
     titulo: str
     descripcion: str | None
     confidence: float | None
@@ -36,7 +38,8 @@ class EventoDetectado(BaseModel):
 
 
 class FeedDeteccion(BaseModel):
-    animal_id: int | None
+    livestock_id: int | None
+    livestock_tag: str | None
     bbox: BBox
     behavior: Behavior
 

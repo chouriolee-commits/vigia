@@ -1,44 +1,64 @@
 /*
   Tokens de VIGÍA — fuente única de colores/tipografía.
   Ver skills/frontend/skill.md ("Tokens de color"). No definir hex fuera de este archivo.
-  App de una sola identidad visual (dark), fiel a fotos-diseño/ — sin modo claro.
+  App de una sola identidad visual (dark), sin modo claro.
+
+  Sistema de profundidad (4 niveles) — pedido explícito de la auditoría visual:
+  1 --bg        fondo general de página
+  2 --surface   contenedores principales (topbar, panel de feed, tablas)
+  3 --surface-2 cards / elementos interactivos (KPI cards, evento, chat, filas)
+  4 --surface-3 hover / selección / elementos destacados
 */
 
 :root {
-  /* superficie — navy oscuro (fotos-diseño/), NO verdoso */
-  --bg: #12141d;
-  --surface: #1c1f2c;
-  --surface-2: #242838;
-  --border: #2b2f40;
+  /* ---------- superficie: azul noche profundo, NO negro puro, NO verdoso ---------- */
+  --bg: #0b0f19;
+  --surface: #10141f;
+  --surface-2: #161c2c;
+  --surface-3: #1d2438;
+  --border: rgba(148, 163, 213, 0.14);
+  --border-strong: rgba(148, 163, 213, 0.24);
 
-  /* texto */
-  --text: #f2f4f8;
-  --text-dim: #a3aabd;
-  --text-faint: #6c7387;
+  /* ---------- texto: 3 niveles de jerarquía, nunca blanco puro ---------- */
+  --text: #eef1f8;
+  --text-dim: #9aa7c7;
+  --text-faint: #626d8a;
 
-  /* acento de marca — verde menta de fotos-diseño/ (logo VIGÍA, bounding boxes, KPIs) */
-  --accent: #3ddc84;
-  --accent-soft: #163524;
-  --accent-ink: #05170d;
+  /* ---------- acento de marca: verde esmeralda tecnológico ---------- */
+  --accent: #22c993;
+  --accent-bright: #2ee6a6; /* glow / highlight puntual, no para áreas grandes */
+  --accent-soft: rgba(34, 201, 147, 0.14);
+  --accent-border: rgba(34, 201, 147, 0.35);
+  --accent-ink: #04140f;
+  --accent-glow: 0 0 0 1px rgba(34, 201, 147, 0.25), 0 0 24px rgba(34, 201, 147, 0.16);
 
-  /* estado semántico (prioridad de alertas / errores) — separado del acento de marca */
-  --danger: #ef4444;
-  --danger-soft: #2a1414;
-  --warning: #f59e0b;
-  --warning-soft: #2a2010;
+  /* ---------- semántico: separado del acento de marca ---------- */
+  --danger: #ff4d5e;
+  --danger-soft: rgba(255, 77, 94, 0.14);
+  --danger-border: rgba(255, 77, 94, 0.35);
+
+  --warning: #f5b942;
+  --warning-soft: rgba(245, 185, 66, 0.14);
+  --warning-border: rgba(245, 185, 66, 0.35);
+
   --info: #38bdf8;
-  --info-soft: #10242c;
+  --info-soft: rgba(56, 189, 248, 0.14);
+  --info-border: rgba(56, 189, 248, 0.35);
 
-  /* tipografía */
+  /* ---------- tipografía ---------- */
   --font-sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "IBM Plex Mono", Menlo, Consolas, monospace;
 
-  /* layout */
-  --radius: 10px;
-  --radius-sm: 6px;
+  /* ---------- layout / profundidad ---------- */
+  --radius: 12px;
+  --radius-sm: 8px;
   --radius-pill: 999px;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.28);
   --shell-max-width: 1400px;
+
+  /* gradiente interno sutil para "levantar" una superficie del fondo (nivel 2→3) */
+  --surface-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 40%);
 }
 
 * {
@@ -53,11 +73,18 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* brillo ambiental muy sutil — dos manchas frías (verde/cyan) sobre el azul noche,
+     no un fondo "iluminado": deben leerse solo como atmósfera, no como decoración. */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(760px 420px at 14% -6%, rgba(34, 201, 147, 0.07), transparent 60%),
+    radial-gradient(640px 360px at 96% 8%, rgba(56, 189, 248, 0.05), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 a {
@@ -67,6 +94,10 @@ a {
 button,
 input {
   font-family: inherit;
+}
+
+button {
+  transition: color 0.2s ease-out, border-color 0.2s ease-out, background-color 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.2s ease-out;
 }
 
 /* utilidad compartida: dato numérico/técnico (horas, IDs, coordenadas, confidence) */

@@ -6,17 +6,19 @@
 .chat-input__field {
   flex: 1;
   min-width: 0;
-  background: var(--surface-2);
+  background: var(--surface-3);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   padding: 0.6rem 1rem;
   color: var(--text);
   font-size: 0.9rem;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .chat-input__field:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .chat-input__field::placeholder {
@@ -33,11 +35,13 @@
   background: var(--accent);
   color: var(--accent-ink);
   cursor: pointer;
+  box-shadow: var(--accent-glow);
   flex: none;
 }
 
 .chat-input__submit:disabled {
-  background: var(--surface-2);
+  background: var(--surface-3);
   color: var(--text-faint);
+  box-shadow: none;
   cursor: not-allowed;
 }

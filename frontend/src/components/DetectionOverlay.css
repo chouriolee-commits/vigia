@@ -20,9 +20,9 @@
 
 .detection-overlay__box {
   position: absolute;
-  border: 2px solid var(--text-dim);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 4px;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .detection-overlay__paw {
@@ -34,9 +34,10 @@
   color: inherit;
 }
 
+/* jerarquía de detección (brief de diseño): tenue -> calmo -> activa/glow -> revisar */
 .detection-overlay__box--neutral {
-  border-color: #d7ded9;
-  color: #d7ded9;
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .detection-overlay__box--accent {
@@ -45,14 +46,14 @@
 }
 
 .detection-overlay__box--alert {
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-color: var(--accent-bright);
+  color: var(--accent-bright);
+  box-shadow: var(--accent-glow);
 }
 
 .detection-overlay__box--unknown {
-  border-color: var(--text-faint);
-  color: var(--text-faint);
+  border-color: var(--warning);
+  color: var(--warning);
   border-style: dashed;
 }
 

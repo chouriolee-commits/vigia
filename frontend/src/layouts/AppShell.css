@@ -11,6 +11,10 @@
   padding: 0.9rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  background-image: var(--surface-sheen);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 5;
 }
 
 .app-shell__brand {
@@ -45,7 +49,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: transparent;
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-dim);
@@ -56,7 +60,8 @@
 
 .app-shell__logout:hover {
   color: var(--danger);
-  border-color: var(--danger);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
 }
 
 .app-shell__logout-label {
@@ -79,6 +84,7 @@
   display: flex;
   background: var(--surface);
   border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
   padding: 0.4rem 0.5rem calc(0.4rem + env(safe-area-inset-bottom));
   z-index: 10;
 }
@@ -96,11 +102,13 @@
   font-size: 0.66rem;
   letter-spacing: 0.02em;
   border-radius: var(--radius-sm);
+  transition: color 0.2s ease-out, background-color 0.2s ease-out;
 }
 
 .app-shell__nav-mobile-link.is-active {
   color: var(--accent);
   background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
 }
 
 @media (min-width: 860px) {

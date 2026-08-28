@@ -1,10 +1,11 @@
 import './KpiCard.css'
 
 // specs/002-dashboard/design.md — las 3 KPI cards SON la navegación (dashboard → 3 botones).
-export default function KpiCard({ icon: Icon, label, value, sublabel, onClick }) {
+// tone: diferencia visual por tarjeta (auditoría de diseño) — no altera la función.
+export default function KpiCard({ icon: Icon, label, value, sublabel, tone = 'accent', onClick }) {
   return (
     <div
-      className="kpi-card"
+      className={`kpi-card kpi-card--${tone}`}
       role="button"
       tabIndex={0}
       onClick={onClick}

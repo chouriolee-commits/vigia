@@ -28,11 +28,12 @@ const CONTEXT = {
 }
 
 describe('aiService.sendMessage (heurística MVP sobre context real)', () => {
-  it('pregunta por un animal con alerta activa responde con descripción y confidence exactos', async () => {
+  it('pregunta por un animal con alerta activa responde con la descripción exacta, sin mencionar confidence (el cliente no lo entiende)', async () => {
     const reply = await sendMessage('¿qué ocurrió con el animal #024?', CONTEXT)
     expect(reply.role).toBe('assistant')
     expect(reply.content).toContain('Patrón de movimiento errático y aislamiento del rebaño.')
-    expect(reply.content).toContain('94%')
+    expect(reply.content).not.toContain('94%')
+    expect(reply.content.toLowerCase()).not.toContain('confidence')
     expect(reply.suggested_action).toEqual({ label: 'Ver análisis', route: '/alertas' })
   })
 

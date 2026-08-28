@@ -20,7 +20,7 @@ export default function AppShell() {
       <header className="app-shell__topbar">
         <NavLink to="/" className="app-shell__brand">
           <BrandLogo size="sm" />
-          <span className="app-shell__brand-sub">Vigilancia Inteligente para la Ganadería: Identificación de Anomalías</span>
+          <span className="app-shell__brand-sub">VIGILANCIA INTELIGENTE PARA LA GANADERÍA: IDENTIFICACIÓN DE ANOMALÍAS</span>
         </NavLink>
 
         {/*

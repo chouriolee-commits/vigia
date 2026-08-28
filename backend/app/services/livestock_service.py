@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from app.repositories import livestock_repository, potrero_repository
-from app.schemas.livestock import AnimalEsperado, AnimalReal, ReconciliacionOut
+from app.schemas.livestock import AnimalEsperado, AnimalReal, PotreroOut, ReconciliacionOut
 
 RECONCILIATION_WINDOW_HOURS = 2
 
@@ -22,7 +22,7 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
     animales_reales = [
         AnimalReal(
             livestock_id=d.livestock_id,
-            tag_code=d.livestock.tag_code if d.livestock_id and d.livestock else None,
+            livestock_tag=d.livestock.tag_code if d.livestock_id and d.livestock else None,
             alias=d.livestock.alias if d.livestock_id and d.livestock else None,
             detected_at=d.detected_at,
             behavior=d.behavior,
@@ -35,7 +35,7 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
     animales_esperados = [
         AnimalEsperado(
             livestock_id=a.id,
-            tag_code=a.tag_code,
+            livestock_tag=a.tag_code,
             species=a.species,
             breed=a.breed,
             status=a.status,
@@ -45,7 +45,7 @@ def get_reconciliation(db: Session, potrero_id: int) -> ReconciliacionOut | None
     ]
 
     return ReconciliacionOut(
-        potrero=potrero.name,
+        potrero=PotreroOut(id=potrero.id, name=potrero.name),
         ventana_horas=RECONCILIATION_WINDOW_HOURS,
         animales_reales=animales_reales,
         animales_esperados=animales_esperados,

@@ -23,4 +23,4 @@ def test_dashboard_agrega_animales_y_alerta_top(client, db, seed_media):
     assert body["animales_monitoreados"]["total"] == 1
     assert len(body["alertas_activas"]) == 1
     assert body["evento_detectado"]["titulo"] == "Atención requerida"
-    assert body["evento_detectado"]["animal_tag"] == "VG-001"
+    assert body["evento_detectado"]["livestock_tag"] == "VG-001"

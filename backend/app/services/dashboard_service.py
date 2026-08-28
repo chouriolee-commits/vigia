@@ -40,8 +40,8 @@ def get_dashboard_summary(db: Session) -> DashboardOut:
     if alertas_orm:
         top = alertas_orm[0]
         evento_detectado = EventoDetectado(
-            animal_id=top.livestock_id,
-            animal_tag=top.livestock.tag_code if top.livestock_id and top.livestock else None,
+            livestock_id=top.livestock_id,
+            livestock_tag=top.livestock.tag_code if top.livestock_id and top.livestock else None,
             titulo="Atención requerida",
             descripcion=top.description,
             confidence=float(top.detection.confidence) if top.detection_id and top.detection else None,
@@ -52,7 +52,8 @@ def get_dashboard_summary(db: Session) -> DashboardOut:
 
     feed = [
         FeedDeteccion(
-            animal_id=d.livestock_id,
+            livestock_id=d.livestock_id,
+            livestock_tag=d.livestock.tag_code if d.livestock_id and d.livestock else None,
             bbox={
                 "x": float(d.bbox_x),
                 "y": float(d.bbox_y),
