@@ -7,17 +7,20 @@ import './LiveFeedPanel.css'
 
 const MAX_CAPTURES = 12
 const CAPTURE_INTERVAL_MS = 12000
+const MAX_BOXES = 5
 
-// specs/004-drone-media/design.md — video real (frontend/public/video), sin bounding boxes: las
-// detecciones de vision/simulator.py son reales pero vienen de una corrida puntual (no sincronizada
-// frame a frame con el loop del video) y con yolov8n-COCO sub-detecta bastante footage aéreo real
-// (desajuste de dominio, ver skills/roboflow) — mostrarlas encima del video se ve más incoherente
-// que informativo para el prototipo. `loading`/`error` vienen de DashboardPage (useDashboardData).
+// specs/004-drone-media/design.md — video real (frontend/public/video) con bounding boxes reales:
+// vision/simulator.py ahora "reconoce" cada detección contra el inventario real del potrero
+// (round-robin, no es re-id real) y simula salud (fiebre/celo/parto) — las cajas ya traen
+// livestock_tag real en vez de "Animal no identificado". Siguen sin sincronizarse frame a frame
+// con el loop del video (corrida puntual del simulador), así que se limitan a MAX_BOXES para que
+// no se vea desordenado. `detections` es `feed_detecciones` de GET /api/dashboard, pasado por
+// DashboardPage (useDashboardData). `loading`/`error` también vienen de ahí.
 //
 // "Revisar imágenes capturadas": en vez de depender del pipeline de detección, DetectionOverlay
 // toma un snapshot del video real cada CAPTURE_INTERVAL_MS y este panel guarda los últimos
 // MAX_CAPTURES en memoria (no persisten al recargar) para mostrarlos en CapturedImagesModal.
-export default function LiveFeedPanel({ loading, error }) {
+export default function LiveFeedPanel({ detections, loading, error }) {
   const [now, setNow] = useState(() => new Date())
   const [captures, setCaptures] = useState([])
   const [galleryOpen, setGalleryOpen] = useState(false)
@@ -52,6 +55,7 @@ export default function LiveFeedPanel({ loading, error }) {
         {!loading && !error && (
           <>
             <DetectionOverlay
+              detections={(detections ?? []).slice(0, MAX_BOXES)}
               videoSrc="/video/video-vacas.mp4"
               onCapture={handleCapture}
               captureIntervalMs={CAPTURE_INTERVAL_MS}

@@ -143,8 +143,18 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Sin eventos recientes')).toBeInTheDocument()
   })
 
-  it('el feed no muestra bounding boxes (detecciones no sincronizadas con el video, se ven incoherentes)', () => {
+  it('el feed muestra los bounding boxes reales de feed_detecciones (vision/simulator.py con animales identificados)', () => {
     vi.mocked(useDashboardData).mockReturnValue({ data: DASHBOARD_MOCK, loading: false, error: null })
+    renderDashboard()
+    expect(screen.getByText('Animal #024 - Comportamiento: Anómalo')).toBeInTheDocument()
+  })
+
+  it('feed_detecciones vacío: el feed se muestra sin overlays y sin error', () => {
+    vi.mocked(useDashboardData).mockReturnValue({
+      data: { ...DASHBOARD_MOCK, feed_detecciones: [] },
+      loading: false,
+      error: null,
+    })
     renderDashboard()
     // "Animal #024" sigue existiendo en el panel de evento detectado (dato distinto al feed);
     // lo que valida este caso es que el feed no muestre la etiqueta "Comportamiento: ..." de una detección.

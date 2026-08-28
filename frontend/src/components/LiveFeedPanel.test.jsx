@@ -22,8 +22,31 @@ describe('LiveFeedPanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/no se pudo cargar/i)
   })
 
-  it('muestra el video con badge VIVO y timestamp, sin bounding boxes (detecciones no sincronizadas con el video, se ven incoherentes)', () => {
-    renderPanel({ loading: false, error: null })
+  it('muestra el video con badge VIVO y timestamp, con overlays de detección (animal real identificado)', () => {
+    renderPanel({
+      detections: [
+        { livestock_id: 24, livestock_tag: '#024', bbox: { x: 0.42, y: 0.3, width: 0.08, height: 0.1 }, behavior: 'anomalo' },
+      ],
+      loading: false,
+      error: null,
+    })
+    expect(screen.getByText('VIVO')).toBeInTheDocument()
+    expect(screen.getByText('Animal #024 - Comportamiento: Anómalo')).toBeInTheDocument()
+  })
+
+  it('limita las cajas mostradas a MAX_BOXES (5) para no verse desordenado', () => {
+    const detections = Array.from({ length: 20 }, (_, i) => ({
+      livestock_id: i,
+      livestock_tag: `#${i}`,
+      bbox: { x: 0.1, y: 0.1, width: 0.05, height: 0.05 },
+      behavior: 'pastoreo',
+    }))
+    const { container } = renderPanel({ detections, loading: false, error: null })
+    expect(container.querySelectorAll('.detection-overlay__box')).toHaveLength(5)
+  })
+
+  it('sin detecciones se muestra sin overlays y sin error', () => {
+    renderPanel({ detections: [], loading: false, error: null })
     expect(screen.getByText('VIVO')).toBeInTheDocument()
     expect(screen.queryByText(/Animal /)).not.toBeInTheDocument()
   })

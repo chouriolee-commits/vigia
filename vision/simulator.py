@@ -93,7 +93,7 @@ def main():
         r = session.get(f"{args.backend_url}/api/potreros/{args.potrero_id}/reconciliacion", timeout=10)
         if r.status_code == 200:
             animales = [
-                {"livestock_id": a["livestock_id"], "tag_code": a["tag_code"]}
+                {"livestock_id": a["livestock_id"], "tag_code": a["livestock_tag"]}
                 for a in r.json().get("animales_esperados", [])
             ]
         if animales:
