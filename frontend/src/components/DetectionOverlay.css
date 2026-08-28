@@ -8,7 +8,6 @@
 }
 
 .detection-overlay--video {
-  aspect-ratio: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,8 +16,7 @@
 .detection-overlay__video {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
