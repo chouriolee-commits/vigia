@@ -17,10 +17,10 @@ _ESTADOS_ABIERTOS = ["activa", "en_revision"]
 
 
 def get_dashboard_summary(db: Session) -> DashboardOut:
-    # Animales que YOLOv8 detectó de verdad en el último frame — no un conteo
-    # limitado al inventario registrado (un frame puede mostrar más animales de
-    # los que ya están dados de alta; contar solo esos sería inventar el número).
-    total_animales, ultima_deteccion = detection_repository.count_in_latest_media(db)
+    # Suma acumulada de detecciones reales (no un conteo limitado al inventario
+    # registrado, ni una foto de un solo frame): cada detección que pasó el umbral
+    # de confianza cuenta, y el total crece con cada una que procesa el pipeline.
+    total_animales = detection_repository.count_all(db)
 
     alertas_orm = alert_repository.list_by_status(db, _ESTADOS_ABIERTOS)
     alertas_activas = [
@@ -70,7 +70,7 @@ def get_dashboard_summary(db: Session) -> DashboardOut:
 
     return DashboardOut(
         animales_monitoreados=AnimalesMonitoreados(
-            total=total_animales, actualizado_at=ultima_deteccion or datetime.now(timezone.utc)
+            total=total_animales, actualizado_at=datetime.now(timezone.utc)
         ),
         alertas_activas=alertas_activas,
         eventos_hoy=EventosHoy(total=eventos_hoy_total),

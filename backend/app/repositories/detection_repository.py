@@ -17,20 +17,14 @@ def list_recent(db: Session, limit: int = 20) -> list[Detection]:
     return list(db.query(Detection).order_by(Detection.detected_at.desc()).limit(limit).all())
 
 
-def count_in_latest_media(db: Session) -> tuple[int, datetime | None]:
+def count_all(db: Session) -> int:
     """
-    Cuántos animales detectó YOLOv8 de verdad en el último frame procesado — el
-    equivalente real a `len(detecciones_finales)` del prototipo original
-    (simulador_video.py/app.py): un conteo por frame, no un tope artificial contra
-    el inventario registrado (un frame puede tener más animales visibles que los
-    que ya están dados de alta en `livestock`).
+    Total acumulado de detecciones reales registradas (cada renglón de `detections`
+    ya pasó el umbral de confianza — RF6 de 005-yolov8-detection). Es una suma, no
+    una foto de un solo frame: crece con cada detección real que procesa el pipeline,
+    igual que pidió el usuario al ver el resumen del simulador (`aceptadas`).
     """
-    ultima = db.query(Detection).order_by(Detection.detected_at.desc()).first()
-    if ultima is None:
-        return 0, None
-
-    total = db.query(Detection).filter(Detection.media_id == ultima.media_id).count()
-    return total, ultima.detected_at
+    return db.query(Detection).count()
 
 
 def list_anomalous_since(db: Session, since: datetime) -> list[Detection]:

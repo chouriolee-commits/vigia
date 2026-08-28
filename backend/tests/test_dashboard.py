@@ -26,10 +26,10 @@ def test_dashboard_vacio_sin_datos(client):
     assert body["feed_detecciones"] == []
 
 
-def test_dashboard_cuenta_animales_reales_del_ultimo_frame(client, db, seed_media):
-    """animales_monitoreados debe reflejar cuántos detectó YOLOv8 en el último frame
-    (como el prototipo original: conteo real por frame), no un tope contra el
-    inventario registrado ni un acumulado histórico."""
+def test_dashboard_suma_todas_las_detecciones_reales(client, db, seed_media):
+    """animales_monitoreados es la SUMA acumulada de detecciones reales (cada una ya
+    pasó el umbral de confianza), no una foto de un solo frame ni un tope contra el
+    inventario registrado — sigue sumando aunque vengan de frames/animales distintos."""
     _crear_deteccion(db, seed_media, livestock_id=seed_media["livestock_id"])
     _crear_deteccion(db, seed_media, livestock_id=None)  # animal sin identificar, cuenta igual
     _crear_deteccion(db, seed_media, livestock_id=None)
@@ -39,8 +39,8 @@ def test_dashboard_cuenta_animales_reales_del_ultimo_frame(client, db, seed_medi
     assert body["animales_monitoreados"]["total"] == 3
 
 
-def test_dashboard_solo_cuenta_el_frame_mas_reciente(client, db, seed_media):
-    """Un frame viejo con muchas detecciones no debe inflar el conteo del frame actual."""
+def test_dashboard_suma_detecciones_de_distintos_frames(client, db, seed_media):
+    """Detecciones de frames/momentos distintos se suman todas, no solo el último frame."""
     hace_rato = datetime.now(timezone.utc) - timedelta(minutes=30)
     for _ in range(5):
         _crear_deteccion(db, seed_media, media_id=seed_media["media_id"], detected_at=hace_rato)
@@ -57,7 +57,7 @@ def test_dashboard_solo_cuenta_el_frame_mas_reciente(client, db, seed_media):
     db.commit()
 
     body = client.get("/api/dashboard").json()
-    assert body["animales_monitoreados"]["total"] == 2
+    assert body["animales_monitoreados"]["total"] == 7
 
 
 def test_dashboard_agrega_alerta_top(client, db, seed_media):
