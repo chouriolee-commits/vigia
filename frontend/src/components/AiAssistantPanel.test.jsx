@@ -53,10 +53,18 @@ describe('AiAssistantPanel', () => {
     expect(screen.getByText('Asistente inteligente de monitoreo')).toBeInTheDocument()
 
     const [{ context, initialMessages }] = vi.mocked(useChat).mock.calls[0]
+    // El cliente no es técnico: el modelo nunca recibe confidence/bbox/ids — solo lo que
+    // puede explicar en palabras (tag, tipo, prioridad, descripción, comportamiento).
     expect(context.alertas_activas).toEqual([
-      { livestock_tag: '#024', type: 'comportamiento_anomalo', priority: 'alta', description: 'Patrón de movimiento errático y aislamiento del rebaño.', confidence: 0.94 },
+      { livestock_tag: '#024', type: 'comportamiento_anomalo', priority: 'alta', description: 'Patrón de movimiento errático y aislamiento del rebaño.' },
     ])
-    expect(context.detecciones_recientes).toBe(DATA.feed_detecciones)
+    expect(context.detecciones_recientes).toEqual([{ livestock_tag: '#024', behavior: 'anomalo' }])
+    const alertaContext = context.alertas_activas[0]
+    expect(alertaContext).not.toHaveProperty('confidence')
+    const deteccionContext = context.detecciones_recientes[0]
+    expect(deteccionContext).not.toHaveProperty('bbox')
+    expect(deteccionContext).not.toHaveProperty('confidence')
+    expect(deteccionContext).not.toHaveProperty('livestock_id')
     expect(initialMessages).toEqual([
       {
         role: 'assistant',

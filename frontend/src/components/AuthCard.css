@@ -1,6 +1,9 @@
 .auth-card {
   width: 100%;
   max-width: 400px;
+  /* se autocentra cuando su celda del grid de LoginPage es más ancha que el card
+     (mobile de 1 columna) — en el layout de 2 columnas la celda ya mide justo esto */
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;

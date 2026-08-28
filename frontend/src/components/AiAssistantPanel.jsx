@@ -9,6 +9,9 @@ import './AiAssistantPanel.css'
 // que ya consume el dashboard: esto es lo que hace que la respuesta no sea un chatbot decorativo.
 // Nunca llama a aiService directamente: todo pasa por useChat (regla 4 de la tarea).
 export default function AiAssistantPanel({ data }) {
+  // El cliente no es técnico: el contexto que le llega al modelo (mock o Groq real) solo
+  // trae campos que un productor entiende. Nunca se manda bbox/coordenadas/ids/confidence —
+  // así el dato técnico no puede "salírsele" al modelo en una respuesta, porque nunca lo tiene.
   const context = useMemo(
     () => ({
       alertas_activas: data.alertas_activas.map((a) => ({
@@ -16,9 +19,11 @@ export default function AiAssistantPanel({ data }) {
         type: a.type,
         priority: a.priority,
         description: a.description,
-        confidence: a.confidence,
       })),
-      detecciones_recientes: data.feed_detecciones,
+      detecciones_recientes: data.feed_detecciones.map((d) => ({
+        livestock_tag: d.livestock_tag,
+        behavior: d.behavior,
+      })),
     }),
     [data],
   )

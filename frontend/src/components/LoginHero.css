@@ -1,0 +1,123 @@
+.login-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 340px;
+  padding: 2rem 0.5rem;
+}
+
+.login-hero__content {
+  position: relative;
+  max-width: 30rem;
+}
+
+.login-hero__lead-line {
+  display: block;
+  width: 2.25rem;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(34, 201, 147, 0.55);
+  margin-bottom: 1.1rem;
+  transform-origin: left center;
+  animation: login-hero-lead-in 500ms ease-out both;
+}
+
+@keyframes login-hero-lead-in {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.login-hero__title {
+  margin: 0 0 1.1rem;
+  font-size: clamp(1.9rem, 1.35rem + 2.2vw, 3.1rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.login-hero__line {
+  display: block;
+}
+
+.login-hero__word {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(14px);
+  animation: login-hero-word-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* el espacio va como margen, no como texto: un espacio de texto al final de un
+   inline-block se recorta (whitespace trimming de fin de línea) y las palabras
+   quedaban pegadas ("DELCAMPOAL") */
+.login-hero__word + .login-hero__word {
+  margin-left: 0.28em;
+}
+
+.login-hero__word--accent {
+  color: var(--accent-bright);
+  text-shadow: 0 0 22px rgba(46, 230, 166, 0.35);
+}
+
+@keyframes login-hero-word-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.login-hero__subtitle {
+  max-width: 26rem;
+  margin: 0 0 1.5rem;
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1.6;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: login-hero-fade-up 550ms ease-out both;
+}
+
+@keyframes login-hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* respeta reduced-motion: el contenido queda visible de inmediato, sin movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .login-hero__lead-line,
+  .login-hero__word,
+  .login-hero__subtitle {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-hero {
+    min-height: auto;
+    padding: 1.5rem 0.25rem 0.5rem;
+    text-align: left;
+  }
+}
