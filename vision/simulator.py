@@ -72,6 +72,10 @@ def main():
         help="No asignar livestock_id ni simular salud — solo lo que YOLOv8 detecta de verdad",
     )
     parser.add_argument("--sin-mostrar", action="store_true", help="No abrir ventana de video (solo consola)")
+    parser.add_argument(
+        "--loop", action="store_true",
+        help="Al terminar el video, reiniciar desde el frame 0 en vez de salir (feed continuo para demo)",
+    )
     args = parser.parse_args()
 
     engine = mock_detector if args.mock else detector
@@ -121,26 +125,34 @@ def main():
     if not args.sin_mostrar:
         print("[INFO] Presiona 'q' en la ventana de video para salir")
 
-    while True:
-        exito, frame = captura.read()
-        if not exito:
-            print("[INFO] Video terminado")
-            break
-
-        if numero_frame % frames_por_intervalo == 0:
-            ultimas_cajas = _procesar_frame(
-                session, args.backend_url, mission_id, frame, numero_frame, engine, animales, resumen
-            )
-            if not args.no_sleep:
-                time.sleep(args.interval)
-
-        if not args.sin_mostrar:
-            _dibujar_cajas(frame, ultimas_cajas)
-            cv2.imshow("VIGÍA — Simulador de dron (q para salir)", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+    try:
+        while True:
+            exito, frame = captura.read()
+            if not exito:
+                if args.loop:
+                    print("[INFO] Fin del video — reiniciando (--loop activo)")
+                    captura.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    numero_frame = 0
+                    continue
+                print("[INFO] Video terminado")
                 break
 
-        numero_frame += 1
+            if numero_frame % frames_por_intervalo == 0:
+                ultimas_cajas = _procesar_frame(
+                    session, args.backend_url, mission_id, frame, numero_frame, engine, animales, resumen
+                )
+                if not args.no_sleep:
+                    time.sleep(args.interval)
+
+            if not args.sin_mostrar:
+                _dibujar_cajas(frame, ultimas_cajas)
+                cv2.imshow("VIGÍA — Simulador de dron (q para salir)", frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+
+            numero_frame += 1
+    except KeyboardInterrupt:
+        print("\n[INFO] Interrumpido (Ctrl+C)")
 
     captura.release()
     if not args.sin_mostrar:
