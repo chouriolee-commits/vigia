@@ -75,7 +75,7 @@ export default function DetectionOverlay({ detections = [], videoSrc = null, onC
         const showLabel = d.behavior === 'anomalo' || i < 3
         return (
           <div
-            key={d.livestock_id ?? `unk-${i}`}
+            key={`${d.livestock_id ?? 'unk'}-${i}`}
             className={`detection-overlay__box detection-overlay__box--${BEHAVIOR_CLASS[d.behavior] ?? 'neutral'}`}
             style={{
               left: `${d.bbox.x * 100}%`,
