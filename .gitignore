@@ -19,6 +19,9 @@ coverage/
 .pytest_cache/
 .vite/
 
+# Pesos de modelos — ultralytics los descarga solo si faltan, no versionar binarios
+*.pt
+
 # Editor/OS
 .DS_Store
 *.swp
