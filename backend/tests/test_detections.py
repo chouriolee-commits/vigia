@@ -9,7 +9,7 @@ DETECTION_PAYLOAD = {
 }
 
 
-def test_deteccion_valida_se_persiste_y_genera_alerta_animal_desconocido(client, seed_media):
+def test_deteccion_valida_se_persiste(client, seed_media):
     media_id = seed_media["media_id"]
 
     response = client.post(f"/api/media/{media_id}/detecciones", json=DETECTION_PAYLOAD)
@@ -18,9 +18,14 @@ def test_deteccion_valida_se_persiste_y_genera_alerta_animal_desconocido(client,
     assert body["id"] is not None
     assert body["potrero_id"] == seed_media["potrero_id"]
 
-    alertas = client.get("/api/alertas").json()
-    assert len(alertas) == 1
-    assert alertas[0]["type"] == "animal_desconocido"
+
+def test_deteccion_sin_livestock_id_no_genera_alerta(client, seed_media):
+    """
+    Sin re-identificación real, TODA detección viene sin livestock_id — alertar
+    por eso inundaría la pantalla de alertas sin aportar información útil.
+    """
+    client.post(f"/api/media/{seed_media['media_id']}/detecciones", json=DETECTION_PAYLOAD)
+    assert client.get("/api/alertas").json() == []
 
 
 def test_deteccion_confianza_baja_se_descarta_sin_alerta(client, seed_media):

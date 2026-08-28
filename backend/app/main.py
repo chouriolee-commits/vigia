@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, assistant, auth, dashboard, detections, eventos, health, potreros
+from app.api import alerts, assistant, auth, dashboard, detections, eventos, health, media, misiones, potreros
 from app.core.config import settings
 
 app = FastAPI(title="VIGÍA API")
@@ -20,5 +20,7 @@ app.include_router(dashboard.router)
 app.include_router(potreros.router)
 app.include_router(alerts.router)
 app.include_router(eventos.router)
+app.include_router(misiones.router)
+app.include_router(media.router)
 app.include_router(detections.router)
 app.include_router(assistant.router)
