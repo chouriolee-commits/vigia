@@ -1,0 +1,24 @@
+# Secrets — nunca commitear claves
+.env
+.env.*
+!.env.example
+
+# Dependencias
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Builds
+dist/
+build/
+
+# Testing
+coverage/
+.pytest_cache/
+.vite/
+
+# Editor/OS
+.DS_Store
+*.swp
