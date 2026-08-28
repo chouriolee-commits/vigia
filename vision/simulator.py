@@ -112,6 +112,7 @@ def main():
     frames_por_intervalo = max(int(fps * args.interval), 1)
     numero_frame = 0
     ultimas_cajas = []  # se refresca solo en frames muestreados; se dibuja en todos
+    resumen = _resumen_vacio()
 
     print(f"[INFO] Video: {args.video} | FPS: {fps:.1f} | muestreo cada {args.interval}s")
     if not args.sin_mostrar:
@@ -125,7 +126,7 @@ def main():
 
         if numero_frame % frames_por_intervalo == 0:
             ultimas_cajas = _procesar_frame(
-                session, args.backend_url, mission_id, frame, numero_frame, engine, animales
+                session, args.backend_url, mission_id, frame, numero_frame, engine, animales, resumen
             )
             if not args.no_sleep:
                 time.sleep(args.interval)
@@ -141,6 +142,8 @@ def main():
     captura.release()
     if not args.sin_mostrar:
         cv2.destroyAllWindows()
+
+    _imprimir_resumen(resumen)
 
 
 def _simular_estado_salud():
@@ -162,7 +165,46 @@ def _simular_estado_salud():
     return random.choices(["pastoreo", "descanso"], weights=[0.8, 0.2])[0], None
 
 
-def _procesar_frame(session, backend_url, mission_id, frame, numero_frame, engine, animales):
+def _resumen_vacio():
+    return {
+        "frames_muestreados": 0,
+        "crudas": 0,
+        "aceptadas": 0,
+        "animales_vistos": set(),
+        "por_estado": {"fiebre": 0, "celo": 0, "parto": 0, "normal": 0},
+    }
+
+
+def _categoria(motivo):
+    if not motivo:
+        return "normal"
+    m = motivo.lower()
+    if "fiebre" in m:
+        return "fiebre"
+    if "celo" in m:
+        return "celo"
+    if "parto" in m:
+        return "parto"
+    return "normal"
+
+
+def _imprimir_resumen(resumen):
+    por_estado = resumen["por_estado"]
+    print()
+    print("========== RESUMEN ==========")
+    print(f"Frames muestreados:      {resumen['frames_muestreados']}")
+    print(f"Detecciones crudas:      {resumen['crudas']}")
+    print(f"Detecciones aceptadas:   {resumen['aceptadas']}  (confianza >= umbral del backend)")
+    print(f"Animales distintos identificados: {len(resumen['animales_vistos'])} → {sorted(resumen['animales_vistos']) or '—'}")
+    print("Por estado (sobre las aceptadas):")
+    print(f"  normal:  {por_estado['normal']}")
+    print(f"  fiebre:  {por_estado['fiebre']}")
+    print(f"  celo:    {por_estado['celo']}")
+    print(f"  parto:   {por_estado['parto']}")
+    print("==============================")
+
+
+def _procesar_frame(session, backend_url, mission_id, frame, numero_frame, engine, animales, resumen):
     ahora = datetime.now(timezone.utc)
 
     # --- Registrar el frame como "media" ---
@@ -206,8 +248,15 @@ def _procesar_frame(session, backend_url, mission_id, frame, numero_frame, engin
                 "texto": f"{etiqueta} · {motivo or det['behavior']}",
             })
 
-    resumen = f" | {', '.join(estados)}" if estados else ""
-    print(f"Frame {numero_frame:5d} | media_id={media_id} | crudas={len(detecciones)} | aceptadas={aceptadas}{resumen}")
+            resumen["animales_vistos"].add(etiqueta)
+            resumen["por_estado"][_categoria(motivo)] += 1
+
+    resumen["frames_muestreados"] += 1
+    resumen["crudas"] += len(detecciones)
+    resumen["aceptadas"] += aceptadas
+
+    linea_estados = f" | {', '.join(estados)}" if estados else ""
+    print(f"Frame {numero_frame:5d} | media_id={media_id} | crudas={len(detecciones)} | aceptadas={aceptadas}{linea_estados}")
 
     return cajas
 
