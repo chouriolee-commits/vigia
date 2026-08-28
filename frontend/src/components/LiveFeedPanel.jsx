@@ -64,7 +64,14 @@ export default function LiveFeedPanel({ detections, loading, error }) {
   }
 
   // Arranca el escaneo de la opción por defecto al montar (no solo al cambiar).
+  // Guard con ref: en desarrollo, StrictMode monta/desmonta/monta este efecto dos
+  // veces a propósito -- sin esto, cada carga de página disparaba DOS escaneos
+  // seguidos (el primero quedaba a medias, con una misión y un par de detecciones
+  // sueltas antes de que el segundo lo matara), ensuciando los datos del potrero.
+  const yaInicioRef = useRef(false)
   useEffect(() => {
+    if (yaInicioRef.current) return
+    yaInicioRef.current = true
     iniciarEscaneo(VIDEO_OPTIONS.find((v) => v.key === videoKey) ?? VIDEO_OPTIONS[0])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
