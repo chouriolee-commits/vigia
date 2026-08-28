@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLivestockReconciliation } from '../hooks/useLivestockReconciliation'
 import { usePotreros } from '../hooks/usePotreros'
 import BackButton from '../components/BackButton'
@@ -58,10 +59,44 @@ const EXPECTED_COLUMNS = [
   },
 ]
 
+// Click en cualquier fila (real o esperado) manda directo al asistente de IA
+// (dashboard `/`) con toda la información del animal ya cargada -- ahí el
+// usuario puede ver sus datos completos y seguir preguntando. Se arma
+// combinando lo que ya viene en `data` (nunca se pide de nuevo al backend):
+// `animales_esperados` trae especie/raza/estado del inventario, `animales_reales`
+// trae alias/última detección/comportamiento si el animal fue visto en el
+// último escaneo. Un animal puede estar en una sola de las dos listas.
+function armarAnimalFoco(row, data) {
+  const esperado = data.animales_esperados.find((a) => a.livestock_id === row.livestock_id)
+  const real = data.animales_reales.find((a) => a.livestock_id === row.livestock_id)
+  return {
+    livestock_id: row.livestock_id,
+    livestock_tag: esperado?.livestock_tag ?? real?.livestock_tag,
+    alias: real?.alias ?? null,
+    species: esperado?.species ?? null,
+    breed: esperado?.breed ?? null,
+    status: esperado?.status ?? null,
+    potrero: data.potrero.name,
+    detectado_recientemente: esperado?.detectado_recientemente ?? null,
+    es_esperado_aqui: real?.es_esperado_aqui ?? null,
+    ultima_deteccion: real?.detected_at ?? null,
+    comportamiento: real?.behavior ?? null,
+    confidence: real?.confidence ?? null,
+  }
+}
+
 export default function LivestockMonitoringPage() {
+  const navigate = useNavigate()
   const { potreros } = usePotreros()
   const [potreroId, setPotreroId] = useState(POTRERO_ID_DEFAULT)
   const { data, loading, error } = useLivestockReconciliation(potreroId)
+
+  // Detecciones sin identificar (livestock_id null) no tienen un animal real
+  // detrás -- no hay a dónde "ir" con ellas, se ignora el click.
+  function handleRowClick(row) {
+    if (row.livestock_id == null) return
+    navigate('/', { state: { animalFoco: armarAnimalFoco(row, data) } })
+  }
 
   return (
     <div className="livestock-page">
@@ -112,6 +147,7 @@ export default function LivestockMonitoringPage() {
               rows={data.animales_reales}
               rowKey="livestock_id"
               emptyMessage="No hay detecciones recientes en este potrero."
+              onRowClick={handleRowClick}
             />
           </section>
           <section className="livestock-page__section">
@@ -121,6 +157,7 @@ export default function LivestockMonitoringPage() {
               rows={data.animales_esperados}
               rowKey="livestock_id"
               emptyMessage="No hay animales asignados a este potrero."
+              onRowClick={handleRowClick}
             />
           </section>
         </div>

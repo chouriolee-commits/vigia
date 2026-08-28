@@ -1,16 +1,28 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import LivestockMonitoringPage from './LivestockMonitoringPage'
 import { useLivestockReconciliation } from '../hooks/useLivestockReconciliation'
 
 vi.mock('../hooks/useLivestockReconciliation')
 
+// Simula el dashboard real: solo muestra el animalFoco recibido por navigate(state)
+// para poder verificar qué llegó, sin montar DashboardPage completo.
+function DashboardHomeStub() {
+  const { state } = useLocation()
+  return (
+    <div>
+      Dashboard Home
+      {state?.animalFoco && <p>animalFoco: {JSON.stringify(state.animalFoco)}</p>}
+    </div>
+  )
+}
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/animales']}>
       <Routes>
-        <Route path="/" element={<div>Dashboard Home</div>} />
+        <Route path="/" element={<DashboardHomeStub />} />
         <Route path="/animales" element={<LivestockMonitoringPage />} />
       </Routes>
     </MemoryRouter>,
@@ -97,6 +109,31 @@ describe('LivestockMonitoringPage', () => {
     renderPage()
     expect(screen.getByText('Animal no identificado')).toBeInTheDocument()
     expect(screen.getByText('Fuera de potrero')).toBeInTheDocument()
+  })
+
+  it('click en una fila de "En el potrero (real)" manda al asistente con la ficha completa del animal', () => {
+    vi.mocked(useLivestockReconciliation).mockReturnValue({ data: RECONCILIATION_MOCK, loading: false, error: null })
+    renderPage()
+    // '#024' aparece en ambas tablas -- el primero en el DOM es el de "En el potrero (real)".
+    fireEvent.click(screen.getAllByText('#024')[0])
+    expect(screen.getByText('Dashboard Home')).toBeInTheDocument()
+    const ficha = JSON.parse(screen.getByText(/animalFoco:/).textContent.replace('animalFoco: ', ''))
+    expect(ficha).toMatchObject({
+      livestock_id: 24,
+      livestock_tag: '#024',
+      species: 'bovino',
+      breed: 'Holstein',
+      status: 'activo',
+      potrero: 'Potrero Norte',
+      comportamiento: 'anomalo',
+    })
+  })
+
+  it('click en una detección sin identificar (livestock_id null) no navega a ningún lado', () => {
+    vi.mocked(useLivestockReconciliation).mockReturnValue({ data: RECONCILIATION_MOCK, loading: false, error: null })
+    renderPage()
+    fireEvent.click(screen.getByText('Animal no identificado'))
+    expect(screen.queryByText('Dashboard Home')).not.toBeInTheDocument()
   })
 
   it('click en "Volver" navega a "/"', () => {

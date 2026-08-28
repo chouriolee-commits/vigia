@@ -13,6 +13,7 @@ function findAnimalTag(message) {
 export function getAssistantReplyMock(message, context = {}) {
   const alertas = context.alertas_activas ?? []
   const detecciones = context.detecciones_recientes ?? []
+  const foco = context.animal_foco ?? null
   const text = message.toLowerCase()
 
   const tag = findAnimalTag(message)
@@ -34,6 +35,21 @@ export function getAssistantReplyMock(message, context = {}) {
       }
     }
     return { role: 'assistant', content: `No encuentro a ${tag} en las detecciones ni alertas recientes.` }
+  }
+
+  // Con un animal enfocado (llegó desde /animales al hacer click en una fila) las preguntas
+  // sin un #tag explícito se asumen sobre ESE animal — es lo que el usuario está viendo.
+  if (foco) {
+    if (text.includes('raza') || text.includes('especie')) {
+      return { role: 'assistant', content: `${foco.livestock_tag} es de la especie ${foco.species}, raza ${foco.breed ?? 'sin registrar'}.` }
+    }
+    if (text.includes('estado') || text.includes('salud')) {
+      const comportamiento = foco.comportamiento ? `, con comportamiento reciente "${BEHAVIOR_LABEL[foco.comportamiento] ?? foco.comportamiento}"` : ''
+      return { role: 'assistant', content: `${foco.livestock_tag} tiene estado "${foco.status}"${comportamiento}.` }
+    }
+    if (text.includes('potrero') || text.includes('dónde') || text.includes('donde')) {
+      return { role: 'assistant', content: `${foco.livestock_tag} está en ${foco.potrero}.` }
+    }
   }
 
   if (text.includes('atenci')) {
@@ -60,6 +76,13 @@ export function getAssistantReplyMock(message, context = {}) {
       role: 'assistant',
       content: `La alerta más reciente (${latest.livestock_tag ?? 'sin animal identificado'}) se generó porque: ${latest.description}`,
       suggested_action: { label: 'Ver análisis', route: '/alertas' },
+    }
+  }
+
+  if (foco) {
+    return {
+      role: 'assistant',
+      content: `${foco.livestock_tag}${foco.alias ? ` (${foco.alias})` : ''}: ${foco.species}/${foco.breed ?? 'raza sin registrar'}, estado ${foco.status}, en ${foco.potrero}.`,
     }
   }
 

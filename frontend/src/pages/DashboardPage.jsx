@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDashboardData } from '../hooks/useDashboardData'
 import { BellIcon, CalendarIcon, PawIcon } from '../components/icons'
 import KpiCard from '../components/KpiCard'
@@ -13,6 +13,11 @@ const HIGH_PRIORITY = new Set(['alta', 'critica'])
 // detectado + chat VIGÍA AI. AppShell ya aporta header/nav, esta página solo orquesta el contenido.
 export default function DashboardPage() {
   const navigate = useNavigate()
+  // Llega desde /animales al hacer click en una fila (ver LivestockMonitoringPage) —
+  // navigate(..., { state }) en vez de un query param para no serializar el objeto
+  // completo del animal en la URL.
+  const { state } = useLocation()
+  const animalFoco = state?.animalFoco ?? null
   const { data, loading, error } = useDashboardData()
 
   const alertasCount = data?.alertas_activas.length ?? 0
@@ -79,7 +84,7 @@ export default function DashboardPage() {
         {!loading && !error && data && (
           <>
             <DetectedEventPanel eventoDetectado={data.evento_detectado} />
-            <AiAssistantPanel data={data} />
+            <AiAssistantPanel data={data} animalFoco={animalFoco} />
           </>
         )}
       </div>

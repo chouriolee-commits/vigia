@@ -68,3 +68,49 @@ describe('aiService.sendMessage (heurística MVP sobre context real)', () => {
     expect(reply.content).toBeTruthy()
   })
 })
+
+// specs/003-livestock-monitoring: click en una fila de /animales manda al asistente con
+// context.animal_foco -- preguntas sin un #tag explícito deben asumirse sobre ese animal.
+describe('aiService.sendMessage con animal_foco (llegó desde /animales)', () => {
+  const CONTEXT_CON_FOCO = {
+    ...CONTEXT,
+    animal_foco: {
+      livestock_tag: '#030',
+      alias: null,
+      species: 'bovino',
+      breed: 'Angus',
+      status: 'activo',
+      potrero: 'Potrero Norte',
+      comportamiento: 'pastoreo',
+      es_esperado_aqui: true,
+    },
+  }
+
+  it('pregunta por "raza" o "especie" responde con los datos del animal enfocado', async () => {
+    const reply = await sendMessage('¿de qué raza es?', CONTEXT_CON_FOCO)
+    expect(reply.content).toContain('#030')
+    expect(reply.content).toContain('Angus')
+  })
+
+  it('pregunta por "estado" responde con el estado y comportamiento del animal enfocado', async () => {
+    const reply = await sendMessage('¿cómo está su estado de salud?', CONTEXT_CON_FOCO)
+    expect(reply.content).toContain('activo')
+    expect(reply.content.toLowerCase()).toContain('pastoreo')
+  })
+
+  it('pregunta por "potrero" responde con la ubicación del animal enfocado', async () => {
+    const reply = await sendMessage('¿en qué potrero está?', CONTEXT_CON_FOCO)
+    expect(reply.content).toContain('Potrero Norte')
+  })
+
+  it('una pregunta genérica (sin match de ninguna regla) igual responde con la ficha del animal enfocado, no el fallback vacío', async () => {
+    const reply = await sendMessage('cuéntame más', CONTEXT_CON_FOCO)
+    expect(reply.content).toContain('#030')
+    expect(reply.content).not.toMatch(/no tengo información específica/i)
+  })
+
+  it('preguntar por un #tag distinto al enfocado ignora animal_foco y responde sobre ese otro tag', async () => {
+    const reply = await sendMessage('¿qué ocurrió con el animal #024?', CONTEXT_CON_FOCO)
+    expect(reply.content).toContain('Patrón de movimiento errático y aislamiento del rebaño.')
+  })
+})

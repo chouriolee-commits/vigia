@@ -32,10 +32,25 @@ const DATA = {
   feed_detecciones: [{ livestock_id: 24, livestock_tag: '#024', bbox: { x: 0.1, y: 0.1, width: 0.1, height: 0.1 }, behavior: 'anomalo', confidence: 0.94 }],
 }
 
-function renderPanel() {
+const ANIMAL_FOCO = {
+  livestock_id: 30,
+  livestock_tag: '#030',
+  alias: null,
+  species: 'bovino',
+  breed: 'Angus',
+  status: 'activo',
+  potrero: 'Potrero Norte',
+  detectado_recientemente: false,
+  es_esperado_aqui: false,
+  ultima_deteccion: null,
+  comportamiento: null,
+  confidence: null,
+}
+
+function renderPanel(props = {}) {
   return render(
     <MemoryRouter>
-      <AiAssistantPanel data={DATA} />
+      <AiAssistantPanel data={DATA} {...props} />
     </MemoryRouter>,
   )
 }
@@ -83,6 +98,32 @@ describe('AiAssistantPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
 
     expect(send).toHaveBeenCalledWith('¿Qué ocurrió con el animal #024?')
+  })
+
+  it('con animalFoco (llegó desde /animales), el mensaje inicial es la ficha del animal, no el aviso de evento_detectado', () => {
+    vi.mocked(useChat).mockReturnValue({ messages: [], isTyping: false, send: vi.fn() })
+    renderPanel({ animalFoco: ANIMAL_FOCO })
+
+    const [{ context, initialMessages }] = vi.mocked(useChat).mock.calls[0]
+    expect(initialMessages).toHaveLength(1)
+    expect(initialMessages[0].content).toContain('#030')
+    expect(initialMessages[0].content).toContain('Angus')
+    expect(initialMessages[0].content).toContain('Potrero Norte')
+    expect(initialMessages[0].suggested_action).toBeUndefined()
+
+    // El contexto que viaja al modelo incluye al animal enfocado, sin ids/confidence.
+    expect(context.animal_foco).toEqual({
+      livestock_tag: '#030',
+      alias: null,
+      species: 'bovino',
+      breed: 'Angus',
+      status: 'activo',
+      potrero: 'Potrero Norte',
+      comportamiento: null,
+      es_esperado_aqui: false,
+    })
+    expect(context.animal_foco).not.toHaveProperty('livestock_id')
+    expect(context.animal_foco).not.toHaveProperty('confidence')
   })
 
   it('sin evento_detectado no genera mensaje inicial', () => {
