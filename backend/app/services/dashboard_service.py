@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from app.repositories import alert_repository, detection_repository, livestock_repository
+from app.repositories import alert_repository, detection_repository
 from app.schemas.dashboard import (
     AnimalesMonitoreados,
     DashboardAlerta,
@@ -11,16 +11,16 @@ from app.schemas.dashboard import (
     EventosHoy,
     FeedDeteccion,
 )
-from app.services import event_service, livestock_service
+from app.services import event_service
 
 _ESTADOS_ABIERTOS = ["activa", "en_revision"]
 
 
 def get_dashboard_summary(db: Session) -> DashboardOut:
-    # Animales DISTINTOS con detección real reciente — no el inventario total del
-    # sistema, que no cambiaría sin importar qué se esté monitoreando ahora mismo.
-    desde = datetime.now(timezone.utc) - timedelta(hours=livestock_service.RECONCILIATION_WINDOW_HOURS)
-    total_animales = livestock_repository.count_distinct_identified_since(db, desde)
+    # Animales que YOLOv8 detectó de verdad en el último frame — no un conteo
+    # limitado al inventario registrado (un frame puede mostrar más animales de
+    # los que ya están dados de alta; contar solo esos sería inventar el número).
+    total_animales, ultima_deteccion = detection_repository.count_in_latest_media(db)
 
     alertas_orm = alert_repository.list_by_status(db, _ESTADOS_ABIERTOS)
     alertas_activas = [
@@ -70,7 +70,7 @@ def get_dashboard_summary(db: Session) -> DashboardOut:
 
     return DashboardOut(
         animales_monitoreados=AnimalesMonitoreados(
-            total=total_animales, actualizado_at=datetime.now(timezone.utc)
+            total=total_animales, actualizado_at=ultima_deteccion or datetime.now(timezone.utc)
         ),
         alertas_activas=alertas_activas,
         eventos_hoy=EventosHoy(total=eventos_hoy_total),
